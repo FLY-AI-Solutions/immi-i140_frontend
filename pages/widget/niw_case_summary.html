@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>NIW Case Summary Widget</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        padding: 20px;
+      }
+      .pathway {
+        margin: 8px 0;
+        padding: 10px;
+        border-left: 4px solid #007bff;
+      }
+    </style>
+  </head>
+  <body>
+    <h3 id="title">NIW Case Summary</h3>
+    <div id="summaryContent">Waiting for data...</div>
+
+    <script>
+      // Tell parent we’re ready
+      window.parent.postMessage({ type: "widgetReady" }, "*");
+
+      window.addEventListener("message", (event) => {
+        if (event.data.type === "updateSummary") {
+          const summary = event.data.data;
+          document.getElementById("title").innerText = summary.title || "NIW Case Summary";
+
+          let html = "";
+          for (const p of summary.pathways || []) {
+            html += `
+              <div class="pathway" style="border-color:${p.badgeColor || '#007bff'}">
+                <strong>${p.label}</strong> - <em>${p.status}</em><br>
+                ${p.summary}
+              </div>
+            `;
+          }
+          document.getElementById("summaryContent").innerHTML = html;
+        }
+      });
+    </script>
+  </body>
+</html>

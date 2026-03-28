@@ -1,0 +1,108 @@
+INPUT JSONS-
+
+{
+  "applicant_profile": {
+    "name": "John Doe",
+    "highest_degree_statement": "Ph.D. in Computer Science, Stanford University",
+    "wes_evaluation_status": "YES"
+  },
+  "education": [
+    {
+      "degree": "Ph.D. in Computer Science",
+      "institution": "Stanford University",
+      "completion_year": "2022"
+    }
+  ],
+  "scholarly_impact": {
+    "google_scholar_profile": "https://scholar.google.com/citations?user=your_id",
+    "total_citations": 1500
+  },
+  "publications_and_patents": [
+    {
+      "type": "Journal Article",
+      "title": "Article 1: \"Advancements in AI\", Journal of Machine Learning",
+      "year": "2024"
+    },
+    {
+      "type": "Conference Presentation",
+      "title": "Presentation 1: \"AI Ethics\", NeurIPS",
+      "year": "2024"
+    },
+    {
+      "type": "Patent",
+      "title": "Patent US123456: \"Method for AI-driven data analysis\"",
+      "year": "2023"
+    }
+  ],
+  "awards_and_honors": [
+    {
+      "name": "Best Paper Award, ACM Conference",
+      "category": "International",
+      "year": "2023"
+    }
+  ],
+  "professional_experience": [
+    {
+      "role": "Research Scientist",
+      "organization": "Tech Corp",
+      "start_year": "2022",
+      "end_year": "Current",
+      "description": "Led AI research teams, managed projects, and published papers on machine learning advancements. Served as a peer reviewer for the Journal of Machine Learning."
+    }
+  ],
+  "memberships_in_distinguished_associations": [
+    {
+      "organization": "IEEE Computer Society",
+      "level": "Member"
+    }
+  ],
+  "media_coverage": [
+    {
+      "title": "\"Breakthrough in AI Research\"",
+      "outlet": "Tech Journal",
+      "year": "2024",
+      "has_document_proof": true
+    }
+  ]
+}
+
+{
+  "proposed_endeavor_statement": "My proposed endeavor involves developing novel machine learning algorithms to address challenges in sustainable energy systems. I plan to establish a research lab that collaborates with both academic institutions and industry leaders to create AI-driven solutions for optimizing renewable energy grids and reducing carbon footprints. This work will contribute significantly to the United States' goals for technological innovation and environmental stewardship.",
+  "applicant_credentials_summary": {
+    "highest_degree": "Ph.D. in Computer Science",
+    "years_of_experience": 3
+  },
+  "past_projects_demonstrating_capability": [
+    {
+      "project_description": "Project 1: AI for Healthcare - Aiming to revolutionize diagnostics in the US.",
+      "connected_achievements": {
+        "degrees": [
+          "Ph.D. in Computer Science, Stanford University"
+        ],
+        "publications": [
+          "Article 1: \"Advancements in AI\", Journal of Machine Learning"
+        ],
+        "presentations": [
+          "Presentation 1: \"AI Ethics\", NeurIPS"
+        ],
+        "awards": [
+          "Best Paper Award, ACM Conference"
+        ],
+        "patents_or_books": [
+            "Patent US123456: \"Method for AI-driven data analysis\""
+        ],
+        "media_coverage": [
+            "\"Breakthrough in AI Research\", Tech Journal"
+        ]
+      }
+    }
+  ],
+  "future_prospects_in_us": [
+    {
+      "position": "Senior AI Researcher",
+      "organization": "Google",
+      "description": "Focusing on advanced ML models.",
+      "has_offer_letter": true
+    }
+  ]
+}

@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Professional Portfolio</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* CHANGED: Define new color variables for easy management */
+      :root {
+        --primary-taupe: #b9b0a2;
+        --dark-charcoal: #1c1c1c;
+        --text-secondary: #525252;
+        --background-light: #fbfbfb;
+        --border-color: #eaeaea;
+      }
+
+      #spinnerOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        display: none;
+      }
+      iframe {
+        width: 100%;
+        height: 150px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+      }
+      body {
+        /* CHANGED: Updated font, background, and text color */
+        font-family: "Inter", sans-serif;
+        background-color: var(--background-light);
+        color: var(--dark-charcoal);
+      }
+      .header {
+        background-color: #ffffff;
+        color: var(--dark-charcoal);
+        padding: 40px 20px;
+        text-align: center;
+        border-bottom: 1px solid var(--border-color);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+      .section {
+        margin: 40px 0;
+        padding: 25px;
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border-color);
+      }
+      .section h2 {
+        /* CHANGED: New color for section titles */
+        border-bottom: 2px solid var(--primary-taupe);
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--primary-taupe);
+        font-weight: 600;
+      }
+      .section-final h2 {
+        /* CHANGED: Contrasting color for final two sections */
+        border-bottom-color: var(--dark-charcoal);
+        color: var(--dark-charcoal);
+      }
+      .edit-btn,
+      .delete-btn {
+        font-size: 0.8rem;
+        cursor: pointer;
+        margin-left: 8px;
+        color: #6c757d;
+      }
+      .edit-btn:hover {
+        /* CHANGED: Hover color */
+        color: var(--dark-charcoal);
+      }
+      .delete-btn:hover {
+        color: #dc3545;
+      }
+      .add-btn {
+        /* CHANGED: New color for the add button */
+        background-color: var(--primary-taupe);
+        color: white;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1rem;
+        transition: background-color 0.2s;
+      }
+      .add-btn:hover {
+        /* CHANGED: Darker hover state */
+        background-color: #a39a8e;
+      }
+      .item {
+        margin-bottom: 15px;
+        padding: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+      }
+      .item-controls {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        display: flex;
+      }
+      .editable {
+        outline: none;
+        flex-grow: 1;
+      }
+      .editable:focus {
+        /* CHANGED: Focus color */
+        border-bottom: 1px dashed var(--primary-taupe);
+      }
+      .connections {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .connect-btn {
+        flex: 1;
+        min-width: 150px;
+        /* CHANGED: Button theme */
+        border-color: var(--dark-charcoal);
+        color: var(--dark-charcoal);
+      }
+      .connect-btn:hover {
+        /* CHANGED: Button hover theme */
+        background-color: var(--dark-charcoal);
+        color: white;
+      }
+      /* ADDED: Style for main submit button */
+      .btn-submit {
+        background-color: var(--dark-charcoal);
+        color: white;
+        border: 1px solid var(--dark-charcoal);
+        padding: 0.5rem 2rem;
+        font-weight: 500;
+        transition: background-color 0.2s ease;
+      }
+      .btn-submit:hover {
+        background-color: #333;
+        color: white;
+      }
+      .offer-letter,
+      .experience-dates,
+      .education-date {
+        margin-top: 10px;
+        font-size: 0.9rem;
+      }
+      .experience-dates {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+      }
+      .file-name {
+        font-weight: bold;
+      }
+      footer {
+        text-align: center;
+        padding: 20px;
+        background: #ffffff;
+        border-top: 1px solid #dee2e6;
+        margin-top: 40px;
+      }
+      @media (max-width: 1024px) {
+        img[alt="Logo"] {
+          display: none !important;
+        }
+      }
+    </style>
+  </head>
+  <!-- Google tag (gtag.js) -->
+  <script
+    async
+    src="https://www.googletagmanager.com/gtag/js?id=G-R65K06V97N"
+  ></script>
+  <script src="../../assets/js/app-config.js"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
+
+    gtag("config", "G-R65K06V97N");
+  </script>
+  <body>
+    <img
+      src="../../assets/images/immigenius-logo.png"
+      alt="Logo"
+      style="
+        position: absolute;
+        top: 2rem;
+        left: 2rem;
+        width: 150px;
+        height: auto;
+      "
+    />
+    <form>
+      <header class="header">
+        <h1>
+          <span id="name" class="editable" contenteditable="true"
+            >John Doe</span
+          >
+          <i
+            class="fas fa-edit edit-btn"
+            onclick="document.getElementById('name').focus();"
+          ></i>
+        </h1>
+        <h4>
+          <span id="email" class="editable" contenteditable="true"
+            >johndoe@gmail.com</span
+          >
+          <i
+            class="fas fa-edit edit-btn"
+            onclick="document.getElementById('email').focus();"
+          ></i>
+          <span class="fs-6 text-secondary lead"
+            >(Your email will be your ID)</span
+          >
+        </h4>
+        <p>
+          <span id="degree" class="editable" contenteditable="true"
+            >Ph.D. in Computer Science, Stanford University</span
+          >
+          <i
+            class="fas fa-edit edit-btn"
+            onclick="document.getElementById('degree').focus();"
+          ></i>
+          (WES Evaluation:
+          <select id="wes" class="form-select-sm">
+            <option value="YES" selected>YES</option>
+            <option value="NO">NO</option>
+            <option value="NotRequired">Not Required</option></select
+          >)
+        </p>
+      </header>
+
+      <div class="container">
+        <section class="section" id="degrees-section">
+          <h2>
+            Academic Degrees
+            <button class="add-btn" type="button" onclick="addDegree()">
+              <i class="fas fa-plus"></i>
+            </button>
+          </h2>
+          <div id="degrees-list">
+            <div class="item">
+              <p class="editable" contenteditable="true">
+                Ph.D. in Computer Science, Stanford University
+              </p>
+              <select class="year-select form-select-sm"></select>
+              <div class="item-controls">
+                <i class="fas fa-edit edit-btn" title="Edit"></i>
+                <i class="fas fa-trash delete-btn" title="Delete"></i>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="awards-section">
+          <h2>
+            Awards
+            <button class="add-btn" type="button" onclick="addAward()">
+              <i class="fas fa-plus"></i>
+            </button>
+          </h2>
+          <div id="awards-list">
+            <div class="item">
+              <p class="editable" contenteditable="true">
+                Best Paper Award, ACM Conference
+              </p>
+              <select class="award-type-select form-select-sm">
+                <option value="International" selected>International</option>
+                <option value="National US">National (US)</option>
+                <option value="National Other">National (Other)</option>
+              </select>
+              <select class="year-select form-select-sm"></select>
+              <div class="item-controls">
+                <i class="fas fa-edit edit-btn" title="Edit"></i>
+                <i class="fas fa-trash delete-btn" title="Delete"></i>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="journals-section">
+          <h2>
+            Journal Articles
+            <button class="add-btn" type="button" onclick="addJournal()">
+              <i class="fas fa-plus"></i>
+            </button>
+          </h2>
+          <div id="journals-list">
+            <div class="item">
+              <p class="editable" contenteditable="true">
+                Article 1: "Advancements in AI", Journal of Machine Learning
+              </p>
+              <select class="year-select form-select-sm"></select>
+              <div class="item-controls">
+                <i class="fas fa-edit edit-btn" title="Edit"></i>
+                <i class="fas fa-trash delete-btn" title="Delete"></i>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="conferences-section">
+          <h2>
+            Conference Presentations
+            <button class="add-btn" type="button" onclick="addConference()">
+              <i class="fas fa-plus"></i>
+            </button>
+          </h2>
+          <div id="conferences-list">
+            <div class="item">
+              <p class="editable" contenteditable="true">
+                Presentation 1: "AI Ethics", NeurIPS
+              </p>
+              <select class="year-select form-select-sm"></select>
+              <div class="item-controls">
+                <i class="fas fa-edit edit-btn" title="Edit"></i>
+                <i class="fas fa-trash delete-btn" title="Delete"></i>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="media-coverage-section">
+          <h2>
+            Media Coverage
+            <button class="add-btn" type="button" onclick="addMediaCoverage()">
+              <i class="fas fa-plus"></i>
+            </button>
+          </h2>
+          <div id="media_coverage-list">
+            <div class="item">
+              <div class="flex-grow-1">
+                <p class="editable" contenteditable="true">
+                  "Breakthrough in AI Research", Tech Journal
+                </p>
+                <div class="offer-letter">
+                  File: <span class="file-name">None</span>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-secondary upload-btn"
+                  >
+                    Upload PDF
+                  </button>
+                  <input
+                    type="file"
+                    class="offer-file"
+                    style="display: none"
+                    accept=".pdf"
+                  />
+                </div>
+              </div>
+              <select class="year-select form-select-sm"></select>
+              <div class="item-controls">
+                <i class="fas fa-edit edit-btn" title="Edit"></i>
+                <i class="fas fa-trash delete-btn" title="Delete"></i>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="scholar-profile-section">
+          <h2>Scholarly Profile</h2>
+          <div id="scholar-profile-list">
+            <div class="item">
+              <p class="editable" contenteditable="true">
+                <strong>Google Scholar Profile:</strong>
+                <a href="#" contenteditable="false"
+                  >https://scholar.google.com/citations?user=your_id</a
+                >
+              </p>
+              <div class="item-controls">
+                <i class="fas fa-edit edit-btn" title="Edit"></i>
+              </div>
+            </div>
+            <div class="item">
+              <p class="editable" contenteditable="true">
+                <strong>Total Citations:</strong> 1500
+              </p>
+              <div class="item-controls">
+                <i class="fas fa-edit edit-btn" title="Edit"></i>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="patents-books-section">
+          <h2>
+            Patents or Books
+            <button class="add-btn" type="button" onclick="addPatentOrBook()">
+              <i class="fas fa-plus"></i>
+            </button>
+          </h2>
+          <div id="patents_books-list">
+            <div class="item">
+              <p class="editable" contenteditable="true">
+                Patent US123456: "Method for AI-driven data analysis"
+              </p>
+              <select class="year-select form-select-sm"></select>
+              <div class="item-controls">
+                <i class="fas fa-edit edit-btn" title="Edit"></i>
+                <i class="fas fa-trash delete-btn" title="Delete"></i>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="projects-section">
+          <h2>
+            Projects
+            <button class="add-btn" type="button" onclick="addProject()">
+              <i class="fas fa-plus"></i>
+            </button>
+          </h2>
+          <div id="projects-list">
+            <div
+              class="item flex-column align-items-start"
+              data-journals="1"
+              data-conferences="1"
+              data-awards="1"
+              data-degrees="1"
+              data-media_coverage="1"
+              data-patents_books="1"
+            >
+              <p class="editable" contenteditable="true">
+                Project 1: AI for Healthcare - Aiming to revolutionize
+                diagnostics in the US.
+              </p>
+              <div class="connections">
+                <button
+                  type="button"
+                  class="btn btn-outline-dark connect-btn"
+                  data-type="degrees"
+                >
+                  Degrees (none)
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-dark connect-btn"
+                  data-type="journals"
+                >
+                  Journal Articles (none)
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-dark connect-btn"
+                  data-type="conferences"
+                >
+                  Conference Presentations (none)
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-dark connect-btn"
+                  data-type="media_coverage"
+                >
+                  Media Coverage (none)
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-dark connect-btn"
+                  data-type="patents_books"
+                >
+                  Patents/Books (none)
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-dark connect-btn"
+                  data-type="awards"
+                >
+                  Awards (none)
+                </button>
+              </div>
+              <div class="item-controls">
+                <i class="fas fa-edit edit-btn" title="Edit"></i>
+                <i class="fas fa-trash delete-btn" title="Delete"></i>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="experience-section">
+          <h2>
+            Professional Experience
+            <button class="add-btn" type="button" onclick="addExperience()">
+              <i class="fas fa-plus"></i>
+            </button>
+          </h2>
+          <div id="experience-list">
+            <div class="item flex-column align-items-start">
+              <div class="editable w-100">
+                <p contenteditable="true">
+                  <strong>Research Scientist</strong> at
+                  <strong>Tech Corp</strong>
+                </p>
+                <p contenteditable="true" style="font-size: 0.9rem">
+                  Led AI research teams, managed projects, and published papers
+                  on machine learning advancements.
+                </p>
+              </div>
+              <div class="experience-dates">
+                <div>
+                  <label class="form-label-sm me-1">From:</label>
+                  <select class="year-select form-select-sm"></select>
+                </div>
+                <div>
+                  <label class="form-label-sm me-1">To:</label>
+                  <select class="year-select-current form-select-sm"></select>
+                </div>
+              </div>
+              <div class="item-controls">
+                <i class="fas fa-edit edit-btn" title="Edit"></i>
+                <i class="fas fa-trash delete-btn" title="Delete"></i>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="education-summary-section">
+          <h2>
+            Education Summary
+            <button
+              class="add-btn"
+              type="button"
+              onclick="addEducationSummary()"
+            >
+              <i class="fas fa-plus"></i>
+            </button>
+          </h2>
+          <div id="education-summary-list">
+            <div class="item flex-column align-items-start">
+              <p class="editable" contenteditable="true">
+                <strong>Highest Degree:</strong> Ph.D. in Computer Science from
+                Stanford University
+              </p>
+              <div class="education-date">
+                <label class="form-label-sm me-2">Date of Completion:</label>
+                <select class="year-select form-select-sm me-2"></select>
+                <input type="date" class="form-control-sm" />
+              </div>
+              <div class="item-controls">
+                <i class="fas fa-edit edit-btn" title="Edit"></i>
+                <i class="fas fa-trash delete-btn" title="Delete"></i>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="memberships-section">
+          <h2>
+            Membership in Societies
+            <button class="add-btn" type="button" onclick="addMembership()">
+              <i class="fas fa-plus"></i>
+            </button>
+          </h2>
+          <div id="memberships-list">
+            <div class="item">
+              <p class="editable" contenteditable="true">
+                Member, IEEE Computer Society
+              </p>
+              <div class="item-controls">
+                <i class="fas fa-edit edit-btn" title="Edit"></i>
+                <i class="fas fa-trash delete-btn" title="Delete"></i>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section section-final" id="future-positions-section">
+          <h2>Potential Future Positions</h2>
+          <div id="future-positions-list">
+            <div class="item flex-column align-items-start">
+              <p class="editable" contenteditable="true">
+                Senior AI Researcher at Google: Focusing on advanced ML models.
+              </p>
+              <div class="offer-letter">
+                Offer Letter: <span class="file-name">None</span>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-secondary upload-btn"
+                >
+                  Upload
+                </button>
+                <input type="file" class="offer-file" style="display: none" />
+              </div>
+              <div class="item-controls">
+                <i class="fas fa-edit edit-btn" title="Edit"></i>
+                <i class="fas fa-trash delete-btn" title="Delete"></i>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section section-final" id="future-endeavor-section">
+          <h2>Proposed Future Endeavor in the US</h2>
+          <div id="future-endeavor-list">
+            <div class="item">
+              <p
+                class="editable"
+                contenteditable="true"
+                style="min-height: 100px"
+              >
+                My proposed endeavor involves developing novel machine learning
+                algorithms to address challenges in sustainable energy systems.
+                I plan to establish a research lab that collaborates with both
+                academic institutions and industry leaders to create AI-driven
+                solutions for optimizing renewable energy grids and reducing
+                carbon footprints. This work will contribute significantly to
+                the United States' goals for technological innovation and
+                environmental stewardship.
+              </p>
+              <div class="item-controls">
+                <i class="fas fa-edit edit-btn" title="Edit"></i>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="d-flex justify-content-end mb-5">
+          <button type="submit" class="btn btn-submit">Submit</button>
+        </div>
+      </div>
+    </form>
+
+    <div
+      class="modal fade"
+      id="connectModal"
+      tabindex="-1"
+      aria-labelledby="connectModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="connectModalLabel">Select Items</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body" id="modal-body"></div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick="saveSelections()"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      id="spinnerOverlay"
+      style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.7);
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        z-index: 9999;
+        color: white;
+        font-family: monospace;
+      "
+    >
+      <div
+        class="spinner-border text-light mb-3"
+        role="status"
+        style="width: 4rem; height: 4rem"
+      >
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <div id="agentMessages" style="text-align: center; font-size: 1rem"></div>
+    </div>
+
+    <footer>
+      <p>&copy; 2025 Professional Portfolio. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      let currentType = "";
+      let currentProject = null;
+      const modalEl = document.getElementById("connectModal");
+      const modal = new bootstrap.Modal(modalEl);
+      const modalTitle = document.getElementById("connectModalLabel");
+      const modalBody = document.getElementById("modal-body");
+
+      // --- Helper Functions ---
+      function generateYearOptions(
+        startOffset = 5,
+        endOffset = 70,
+        includeCurrent = false
+      ) {
+        let options = "";
+        if (includeCurrent) {
+          options += '<option value="Current">Current</option>';
+        }
+        const currentYear = new Date().getFullYear();
+        for (
+          let i = currentYear + startOffset;
+          i >= currentYear - endOffset;
+          i--
+        ) {
+          options += `<option value="${i}">${i}</option>`;
+        }
+        return options;
+      }
+
+      function populateYearSelects() {
+        const regularYearOptions = generateYearOptions();
+        const currentYearOptions = generateYearOptions(5, 70, true);
+        document.querySelectorAll(".year-select").forEach((sel) => {
+          if (sel.innerHTML === "") sel.innerHTML = regularYearOptions;
+        });
+        document.querySelectorAll(".year-select-current").forEach((sel) => {
+          if (sel.innerHTML === "") sel.innerHTML = currentYearOptions;
+        });
+      }
+
+      // --- Connection Modal Logic ---
+      function getItems(type) {
+        const listId = type + "-list";
+        const items = document.querySelectorAll(`#${listId} .item`);
+        return Array.from(items).map((item, index) => ({
+          id: index + 1,
+          title: item.querySelector("p").innerText,
+        }));
+      }
+
+      function updateButton(btn, selected, type) {
+        const typeLabels = {
+          degrees: {
+            singular: "Degree",
+            plural: "Degrees",
+          },
+          journals: {
+            singular: "Journal Article",
+            plural: "Journal Articles",
+          },
+          conferences: {
+            singular: "Conference Presentation",
+            plural: "Conference Presentations",
+          },
+          awards: {
+            singular: "Award",
+            plural: "Awards",
+          },
+          media_coverage: {
+            singular: "Media Coverage",
+            plural: "Media Coverage",
+          },
+          patents_books: {
+            singular: "Patent/Book",
+            plural: "Patents/Books",
+          },
+        };
+        const labels = typeLabels[type];
+        if (
+          !selected ||
+          selected.length === 0 ||
+          selected.every((s) => s === "")
+        ) {
+          btn.innerText = `${labels.plural} (none)`;
+        } else {
+          const label = selected.length === 1 ? labels.singular : labels.plural;
+          btn.innerText = `${label}: ${selected.join(", ")}`;
+        }
+      }
+
+      function initializeButtons() {
+        document.querySelectorAll(".connect-btn").forEach((btn) => {
+          const project = btn.closest(".item");
+          const type = btn.dataset.type;
+          const selected = project.dataset[type]
+            ? project.dataset[type].split(",")
+            : [];
+          updateButton(btn, selected, type);
+        });
+      }
+
+      function attachConnectListeners(element) {
+        element.querySelectorAll(".connect-btn").forEach((btn) => {
+          btn.addEventListener("click", function () {
+            currentType = this.dataset.type;
+            currentProject = this.closest(".item");
+            modalTitle.innerText =
+              "Select " +
+              currentType
+                .replace("_", " ")
+                .replace(/\b\w/g, (l) => l.toUpperCase());
+
+            const items = getItems(currentType);
+            let html =
+              items.length > 0 ? "" : "<p>No items available to connect.</p>";
+            items.forEach((item) => {
+              html += `
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="${item.id}" id="select-${currentType}-${item.id}">
+                                    <label class="form-check-label" for="select-${currentType}-${item.id}">${item.id}: ${item.title}</label>
+                                </div>
+                            `;
+            });
+            modalBody.innerHTML = html;
+
+            const currentSelected = currentProject.dataset[currentType]
+              ? currentProject.dataset[currentType].split(",")
+              : [];
+            currentSelected.forEach((id) => {
+              const checkbox = document.getElementById(
+                `select-${currentType}-${id}`
+              );
+              if (checkbox) checkbox.checked = true;
+            });
+
+            modal.show();
+          });
+        });
+      }
+
+      function saveSelections() {
+        const selected = Array.from(
+          document.querySelectorAll("#modal-body .form-check-input:checked")
+        ).map((inp) => inp.value);
+        currentProject.dataset[currentType] = selected.join(",");
+        const btn = currentProject.querySelector(
+          `.connect-btn[data-type="${currentType}"]`
+        );
+        updateButton(btn, selected, currentType);
+        modal.hide();
+      }
+
+      function attachUploadListeners(element) {
+        element.querySelectorAll(".upload-btn").forEach((btn) => {
+          btn.onclick = () => btn.nextElementSibling.click();
+        });
+        element.querySelectorAll(".offer-file").forEach((inp) => {
+          inp.onchange = () => {
+            const fileNameSpan = inp.parentElement.querySelector(".file-name");
+            fileNameSpan.innerText = inp.files[0] ? inp.files[0].name : "None";
+          };
+        });
+      }
+
+      // --- Generic Add Item Function ---
+      function addItem(listId, content) {
+        const list = document.getElementById(listId);
+        const newItem = document.createElement("div");
+        newItem.className = "item";
+        newItem.innerHTML = content;
+        list.appendChild(newItem);
+        return newItem;
+      }
+
+      // --- Section-specific Add Functions ---
+      function addDegree() {
+        const content = `
+                <p class="editable" contenteditable="true">New Degree, University Name</p>
+                <select class="year-select form-select-sm">${generateYearOptions()}</select>
+                <div class="item-controls">
+                    <i class="fas fa-edit edit-btn" title="Edit"></i>
+                    <i class="fas fa-trash delete-btn" title="Delete"></i>
+                </div>`;
+        addItem("degrees-list", content);
+      }
+
+      function addAward() {
+        const content = `
+                <p class="editable" contenteditable="true">New Award</p>
+                <select class="award-type-select form-select-sm">
+                    <option value="International" selected>International</option>
+                    <option value="National US">National (US)</option>
+                    <option value="National Other">National (Other)</option>
+                </select>
+                <select class="year-select form-select-sm">${generateYearOptions()}</select>
+                <div class="item-controls">
+                    <i class="fas fa-edit edit-btn" title="Edit"></i>
+                    <i class="fas fa-trash delete-btn" title="Delete"></i>
+                </div>`;
+        addItem("awards-list", content);
+      }
+
+      function addJournal() {
+        const content = `
+                <p class="editable" contenteditable="true">New Journal Article</p>
+                <select class="year-select form-select-sm">${generateYearOptions()}</select>
+                <div class="item-controls">
+                    <i class="fas fa-edit edit-btn" title="Edit"></i>
+                    <i class="fas fa-trash delete-btn" title="Delete"></i>
+                </div>`;
+        addItem("journals-list", content);
+      }
+
+      function addConference() {
+        const content = `
+                <p class="editable" contenteditable="true">New Conference Presentation</p>
+                <select class="year-select form-select-sm">${generateYearOptions()}</select>
+                <div class="item-controls">
+                    <i class="fas fa-edit edit-btn" title="Edit"></i>
+                    <i class="fas fa-trash delete-btn" title="Delete"></i>
+                </div>`;
+        addItem("conferences-list", content);
+      }
+
+      function addMediaCoverage() {
+        const content = `
+                <div class="flex-grow-1">
+                    <p class="editable" contenteditable="true">New Media Coverage, Outlet Name</p>
+                    <div class="offer-letter">File: <span class="file-name">None</span> <button type="button" class="btn btn-sm btn-secondary upload-btn">Upload PDF</button> <input type="file" class="offer-file" style="display:none;" accept=".pdf"></div>
+                </div>
+                <select class="year-select form-select-sm">${generateYearOptions()}</select>
+                <div class="item-controls">
+                    <i class="fas fa-edit edit-btn" title="Edit"></i>
+                    <i class="fas fa-trash delete-btn" title="Delete"></i>
+                </div>`;
+        const newItem = addItem("media_coverage-list", content);
+        attachUploadListeners(newItem);
+      }
+
+      function addPatentOrBook() {
+        const content = `
+                <p class="editable" contenteditable="true">New Patent or Book Title</p>
+                <select class="year-select form-select-sm">${generateYearOptions()}</select>
+                <div class="item-controls">
+                    <i class="fas fa-edit edit-btn" title="Edit"></i>
+                    <i class="fas fa-trash delete-btn" title="Delete"></i>
+                </div>`;
+        addItem("patents_books-list", content);
+      }
+
+      function addProject() {
+        const content = `
+                <p class="editable" contenteditable="true">New Project - Description here.</p>
+                <div class="connections">
+                    <button type="button" class="btn btn-outline-dark connect-btn" data-type="degrees">Degrees (none)</button>
+                    <button type="button" class="btn btn-outline-dark connect-btn" data-type="journals">Journal Articles (none)</button>
+                    <button type="button" class="btn btn-outline-dark connect-btn" data-type="conferences">Conference Presentations (none)</button>
+                    <button type="button" class="btn btn-outline-dark connect-btn" data-type="media_coverage">Media Coverage (none)</button>
+                    <button type="button" class="btn btn-outline-dark connect-btn" data-type="patents_books">Patents/Books (none)</button>
+                    <button type="button" class="btn btn-outline-dark connect-btn" data-type="awards">Awards (none)</button>
+                </div>
+                <div class="item-controls">
+                    <i class="fas fa-edit edit-btn" title="Edit"></i>
+                    <i class="fas fa-trash delete-btn" title="Delete"></i>
+                </div>`;
+        const newItem = addItem("projects-list", content);
+        newItem.classList.add("flex-column", "align-items-start");
+        newItem.dataset.journals = "";
+        newItem.dataset.conferences = "";
+        newItem.dataset.awards = "";
+        newItem.dataset.degrees = "";
+        newItem.dataset.media_coverage = "";
+        newItem.dataset.patents_books = "";
+        attachConnectListeners(newItem);
+      }
+
+      function addExperience() {
+        const content = `
+                <div class="editable w-100">
+                    <p contenteditable="true"><strong>New Job Title</strong> at <strong>Company</strong></p>
+                    <p contenteditable="true" style="font-size: 0.9rem;">Description of role.</p>
+                </div>
+                <div class="experience-dates">
+                    <div>
+                        <label class="form-label-sm me-1">From:</label>
+                        <select class="year-select form-select-sm">${generateYearOptions()}</select>
+                    </div>
+                    <div>
+                        <label class="form-label-sm me-1">To:</label>
+                        <select class="year-select-current form-select-sm">${generateYearOptions(
+                          5,
+                          70,
+                          true
+                        )}</select>
+                    </div>
+                </div>
+                <div class="item-controls">
+                    <i class="fas fa-edit edit-btn" title="Edit"></i>
+                    <i class="fas fa-trash delete-btn" title="Delete"></i>
+                </div>`;
+        const newItem = addItem("experience-list", content);
+        newItem.classList.add("flex-column", "align-items-start");
+      }
+
+      function addEducationSummary() {
+        const content = `
+                <p class="editable" contenteditable="true"><strong>Highest Degree:</strong> Degree Name from University</p>
+                <div class="education-date">
+                    <label class="form-label-sm me-2">Date of Completion:</label>
+                    <select class="year-select form-select-sm me-2">${generateYearOptions()}</select>
+                    <input type="date" class="form-control-sm">
+                </div>
+                <div class="item-controls">
+                    <i class="fas fa-edit edit-btn" title="Edit"></i>
+                    <i class="fas fa-trash delete-btn" title="Delete"></i>
+                </div>`;
+        const newItem = addItem("education-summary-list", content);
+        newItem.classList.add("flex-column", "align-items-start");
+      }
+
+      function addMembership() {
+        const content = `
+                <p class="editable" contenteditable="true">New Membership</p>
+                <div class="item-controls">
+                    <i class="fas fa-edit edit-btn" title="Edit"></i>
+                    <i class="fas fa-trash delete-btn" title="Delete"></i>
+                </div>`;
+        addItem("memberships-list", content);
+      }
+
+      // --- Global Event Listeners ---
+      document.addEventListener("click", function (e) {
+        // Handle Edit Clicks
+        if (e.target.matches(".edit-btn")) {
+          const item = e.target.closest(".item");
+          if (item) {
+            // Preferentially find an editable element within a wrapper if it exists
+            let editable = item.querySelector(
+              '.editable[contenteditable="true"], .editable > [contenteditable="true"]'
+            );
+            if (!editable) {
+              // Fallback to the first contenteditable element in the item
+              editable = item.querySelector('[contenteditable="true"]');
+            }
+            if (editable) editable.focus();
+          }
+        }
+        // Handle Delete Clicks
+        if (e.target.matches(".delete-btn")) {
+          const item = e.target.closest(".item");
+          if (item && confirm("Are you sure you want to delete this item?")) {
+            item.remove();
+          }
+        }
+      });
+
+      // --- Initial Setup ---
+      document.addEventListener("DOMContentLoaded", function () {
+        populateYearSelects();
+        initializeButtons();
+        attachConnectListeners(document);
+        attachUploadListeners(document);
+      });
+
+      //  Form Submission
+      document
+        .querySelector("form")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          // --- Helper to get innerText safely ---
+          const getText = (selector, parent = document) => {
+            const el = parent.querySelector(selector);
+            return el ? el.innerText.trim() : "";
+          };
+
+          // --- Helper to get select value safely ---
+          const getSelectValue = (selector, parent = document) => {
+            const el = parent.querySelector(selector);
+            return el ? el.value : "";
+          };
+
+          const applicant_profile = {
+            name: document.getElementById("name")?.innerText.trim() || "",
+            email:
+              document.getElementById("email")?.innerText.trim() ||
+              document.getElementById("email")?.value.trim() ||
+              "",
+            wes_evaluation_status: document.getElementById("wes")?.value || "",
+            highest_degree_statement:
+              document
+                .querySelector("#education-summary-list .item p")
+                ?.innerText.trim() || "",
+          };
+          // --- Education ---
+          const education = Array.from(
+            document.querySelectorAll("#degrees-list .item")
+          ).map((item) => {
+            const degreeText = getText("p", item);
+            const parts = degreeText.split(",");
+            const degree = parts[0]?.trim() || "";
+            const institution = parts[1]?.trim() || "";
+            return {
+              degree,
+              institution,
+              completion_year: getSelectValue(".year-select", item),
+            };
+          });
+
+          // --- Scholarly impact ---
+          const scholarly_impact = {
+            google_scholar_profile:
+              document.querySelector("#scholar-profile-list a")?.href || "",
+            total_citations:
+              parseInt(
+                getText("#scholar-profile-list .item:nth-child(2) p").replace(
+                  /\D/g,
+                  ""
+                )
+              ) || 0,
+          };
+
+          // --- Publications and patents ---
+          const publications_and_patents = [];
+
+          document.querySelectorAll("#journals-list .item").forEach((item) => {
+            publications_and_patents.push({
+              type: "Journal Article",
+              title: getText("p", item),
+              year: getSelectValue(".year-select", item),
+            });
+          });
+
+          document
+            .querySelectorAll("#conferences-list .item")
+            .forEach((item) => {
+              publications_and_patents.push({
+                type: "Conference Presentation",
+                title: getText("p", item),
+                year: getSelectValue(".year-select", item),
+              });
+            });
+
+          document
+            .querySelectorAll("#patents_books-list .item")
+            .forEach((item) => {
+              publications_and_patents.push({
+                type: "Patent",
+                title: getText("p", item),
+                year: getSelectValue(".year-select", item),
+              });
+            });
+
+          // --- Awards and honors ---
+          const awards_and_honors = Array.from(
+            document.querySelectorAll("#awards-list .item")
+          ).map((item) => ({
+            name: getText("p", item),
+            category: getSelectValue(".award-type-select", item),
+            year: getSelectValue(".year-select", item),
+          }));
+
+          // --- Professional experience ---
+          const professional_experience = Array.from(
+            document.querySelectorAll("#experience-list .item")
+          ).map((item) => {
+            const roleOrg = getText("p:nth-child(1)", item);
+            const desc = getText("p:nth-child(2)", item);
+            const roleMatch = roleOrg.match(/<strong>(.*?)<\/strong>/);
+            const orgMatch = roleOrg.match(/at\s+<strong>(.*?)<\/strong>/);
+            const role = roleMatch ? roleMatch[1] : roleOrg;
+            const org = orgMatch ? orgMatch[1] : "";
+            return {
+              role,
+              organization: org,
+              start_year: getSelectValue(".year-select", item),
+              end_year: getSelectValue(".year-select-current", item),
+              description: desc,
+            };
+          });
+
+          // --- Memberships ---
+          const memberships_in_distinguished_associations = Array.from(
+            document.querySelectorAll("#memberships-list .item")
+          ).map((item) => {
+            const text = getText("p", item);
+            const [level, organization] = text.includes(",")
+              ? text.split(",").map((t) => t.trim())
+              : ["Member", text];
+            return {
+              organization,
+              level,
+            };
+          });
+
+          // --- Media coverage ---
+          const media_coverage = Array.from(
+            document.querySelectorAll("#media_coverage-list .item")
+          ).map((item) => {
+            const text = getText("p", item);
+            const [titlePart, outletPart] = text
+              .split(",")
+              .map((t) => t.trim());
+            const fileName = item.querySelector(".file-name")?.innerText.trim();
+            return {
+              title: titlePart,
+              outlet: outletPart,
+              year: getSelectValue(".year-select", item),
+              has_document_proof: fileName && fileName !== "None",
+            };
+          });
+
+          // --- Build First JSON ---
+          const INPUT_JSON_1 = {
+            applicant_profile,
+            education,
+            scholarly_impact,
+            publications_and_patents,
+            awards_and_honors,
+            professional_experience,
+            memberships_in_distinguished_associations,
+            media_coverage,
+          };
+
+          // --- Second JSON: Future endeavor etc. ---
+          const proposed_endeavor_statement = getText(
+            "#future-endeavor-list .item p"
+          );
+
+          const highest_degree_text = getText(
+            "#education-summary-list .item p"
+          );
+          const highest_degree =
+            highest_degree_text.split(":")[1]?.split("from")[0]?.trim() || "";
+
+          // Estimate experience years
+          const years_of_experience =
+            new Date().getFullYear() -
+            (parseInt(professional_experience[0]?.start_year) ||
+              new Date().getFullYear());
+
+          const applicant_credentials_summary = {
+            highest_degree,
+            years_of_experience,
+          };
+
+          // Projects and connections
+          const past_projects_demonstrating_capability = Array.from(
+            document.querySelectorAll("#projects-list .item")
+          ).map((item) => {
+            const desc = getText("p", item);
+            const getConnected = (type) => {
+              const ids = item.dataset[type]
+                ? item.dataset[type].split(",").map((i) => i.trim())
+                : [];
+              return ids.map((id) => {
+                const list = document.querySelector(`#${type}-list`);
+                const p = list?.querySelector(`.item:nth-child(${id}) p`);
+                return p ? p.innerText.trim() : "";
+              });
+            };
+            return {
+              project_description: desc,
+              connected_achievements: {
+                degrees: getConnected("degrees"),
+                publications: getConnected("journals"),
+                presentations: getConnected("conferences"),
+                awards: getConnected("awards"),
+                patents_or_books: getConnected("patents_books"),
+                media_coverage: getConnected("media_coverage"),
+              },
+            };
+          });
+
+          // Future prospects
+          const future_prospects_in_us = Array.from(
+            document.querySelectorAll("#future-positions-list .item")
+          ).map((item) => {
+            const text = getText("p", item);
+            const [posPart, rest] = text.split(" at ");
+            const position = posPart.replace("Senior", "Senior").trim();
+            const [organization, desc] = rest
+              ? rest.split(":").map((s) => s.trim())
+              : ["", ""];
+            const has_offer_letter =
+              item.querySelector(".file-name")?.innerText.trim() !== "None";
+            return {
+              position,
+              organization,
+              description: desc,
+              has_offer_letter,
+            };
+          });
+
+          const INPUT_JSON_2 = {
+            proposed_endeavor_statement,
+            applicant_credentials_summary,
+            past_projects_demonstrating_capability,
+            future_prospects_in_us,
+          };
+          const merge_json =
+            JSON.stringify(INPUT_JSON_1, null, 2) +
+            JSON.stringify(INPUT_JSON_2, null, 2);
+
+          // Fetch function
+          const messageBox = document.getElementById("agentMessages");
+          const showMessages = async () => {
+            const messages = [
+              "immi-agent-1 reading user profile...",
+              "immi-agent-2 checking user’s field and US national waiver opportunities...",
+              "immi-agent-3 reasoning for Dhanasar 3 prongs...",
+              "immi-corpus-collaboration determining eligibility for USCIS prongs and weakness...",
+            ];
+
+            for (let i = 0; i < messages.length; i++) {
+              messageBox.textContent = messages[i];
+              if (i < messages.length - 1) {
+                await new Promise((res) => setTimeout(res, 3000)); // 3 sec each
+              } else {
+                // last message stays till spinner hides
+                break;
+              }
+            }
+          };
+
+          const pollForResult = (taskId, timeout = 180000, interval = 5000) => {
+            const startTime = Date.now();
+            return new Promise((resolve, reject) => {
+              const checkStatus = async () => {
+                if (Date.now() - startTime > timeout) {
+                  return reject(
+                    new Error("Polling timed out after 3 minutes.")
+                  );
+                }
+
+                try {
+                  const pollResponse = await fetch(
+                    `${window.ImmiAppConfig.apiBaseUrl}/results/${taskId}`
+                  );
+                  if (!pollResponse.ok) {
+                    return reject(
+                      new Error(
+                        `Polling failed with status: ${pollResponse.status}`
+                      )
+                    );
+                  }
+                  const pollResult = await pollResponse.json();
+
+                  if (pollResult.status === "completed") {
+                    return resolve(pollResult.result);
+                  } else if (pollResult.status === "failed") {
+                    return reject(
+                      new Error(
+                        `The task failed on the server: ${pollResult.result}`
+                      )
+                    );
+                  } else {
+                    setTimeout(checkStatus, interval);
+                  }
+                } catch (error) {
+                  return reject(error);
+                }
+              };
+              checkStatus();
+            });
+          };
+
+          const spinner = document.getElementById("spinnerOverlay");
+          try {
+            spinner.style.display = "flex";
+            showMessages();
+
+            const initialResponse = await fetch(
+              `${window.ImmiAppConfig.apiBaseUrl}/run-agent`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  input_as_text: merge_json,
+                }),
+              }
+            );
+
+            if (!initialResponse.ok) {
+              throw new Error(
+                `Initial request failed with status: ${initialResponse.status}`
+              );
+            }
+
+            const initialResult = await initialResponse.json();
+            const taskId = initialResult.task_id;
+
+            if (!taskId) {
+              throw new Error("Server did not return a valid task ID.");
+            }
+
+            const finalResult = await pollForResult(taskId);
+
+            // ===================================================================
+            // ## FIX APPLIED HERE ##
+            // Changed `finalResult.data` to just `finalResult` because the 'data'
+            // wrapper no longer exists in the new asynchronous response structure.
+            // ===================================================================
+            const summary = finalResult?.summarize_and_display?.output_parsed;
+
+            if (!summary) {
+              alert("No summary data returned from the completed task!");
+              spinner.style.display = "none";
+              return;
+            }
+
+            spinner.style.display = "none";
+            const email = INPUT_JSON_1.applicant_profile.email;
+            // console.log(email);
+
+            try {
+              const saveResponse = await fetch(
+                `${window.ImmiAppConfig.apiBaseUrl}/save-user-data`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    email: email,
+                    json_data: summary,
+                  }),
+                }
+              );
+
+              const saveResult = await saveResponse.json();
+
+              if (saveResult.status !== "success") {
+                console.warn(
+                  "Save-user-data API returned an error:",
+                  saveResult.message
+                );
+                alert("Warning: Data saved partially or failed!");
+              } else {
+                const dataId = saveResult.data_id;
+                window.location.href = `../payment/payment.html?rB=${encodeURIComponent(
+                  dataId
+                )}`;
+              }
+            } catch (saveErr) {
+              console.error("Error saving user data:", saveErr);
+              alert("Failed to save user data to server!");
+            }
+          } catch (error) {
+            spinner.style.display = "none";
+            console.error("Error:", error);
+            alert(`An error occurred: ${error.message}`);
+          }
+        });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,50 @@
+:root {
+  --primary-taupe: #b9b0a2;
+  --dark-charcoal: #1c1c1c;
+  --text-secondary: #525252;
+  --background-light: #fbfbfb;
+  --surface: #ffffff;
+  --border-color: #eaeaea;
+  --success-green: #2c7a56;
+  --shadow-soft: 0 18px 40px rgba(28, 28, 28, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  color: var(--dark-charcoal);
+  background:
+    radial-gradient(circle at top left, rgba(185, 176, 162, 0.2), transparent 30%),
+    linear-gradient(180deg, #fffdf9 0%, var(--background-light) 100%);
+}
+
+.page-shell {
+  min-height: 100vh;
+}
+
+.brand-logo {
+  max-height: 48px;
+  object-fit: contain;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.card-surface {
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  box-shadow: var(--shadow-soft);
+}
+
+.page-title {
+  letter-spacing: -0.03em;
+}
+
+.muted-copy {
+  color: var(--text-secondary);
+}

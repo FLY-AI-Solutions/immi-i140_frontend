@@ -1,0 +1,42 @@
+.hidden {
+  display: none;
+}
+body {
+  font-family: Arial, sans-serif;
+  background-color: #ffffff; /* Immigenius logo background color */
+  margin: 0;
+  padding: 20px;
+}
+header,
+main {
+  max-width: 800px;
+  margin: 0 auto;
+}
+section {
+  padding: 2rem;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  border: none;
+  transition: all 0.3s ease;
+  margin: 1rem 0;
+}
+
+section:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  background: linear-gradient(145deg, #ffffff, #f8f9fb);
+}
+
+h1,
+h2 {
+  color: #333;
+}
+#checkout {
+  min-height: 400px; /* Ensure space for Stripe form */
+}
+@media (max-width: 600px) {
+  section {
+    padding: 10px;
+  }
+}

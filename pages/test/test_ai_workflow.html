@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Agent Runner</title>
+    <script src="../../assets/js/app-config.js"></script>
+    <style>
+      iframe {
+        width: 100%;
+        height: 600px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Run Agent Workflow</h2>
+    <textarea
+      id="inputText"
+      rows="5"
+      cols="60"
+      placeholder="Enter input text..."
+    ></textarea
+    ><br />
+    <button id="runButton">Run Agent</button>
+
+    <h3>Summary Widget:</h3>
+    <iframe id="widgetFrame" src="../widget/niw_case_summary.html"></iframe>
+
+    <script>
+      document
+        .getElementById("runButton")
+        .addEventListener("click", async () => {
+          const inputText = document.getElementById("inputText").value;
+          const output = document.getElementById("widgetFrame").contentWindow;
+          // TEST_COMMAND: curl -X POST http://18.224.158.29:8000/run-agent -H "Content-Type: application/json" -d '{"input_as_text": "test input"}'
+          const response = await fetch(
+            `${window.ImmiAppConfig.apiBaseUrl}/run-agent`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ input_as_text: inputText }),
+            }
+          );
+
+          const result = await response.json();
+
+          // Extract summarize_and_display result
+          const summary = result.data?.summarize_and_display?.output_parsed;
+
+          if (!summary) {
+            alert("No summary data returned!");
+            return;
+          }
+
+          // Send data to the widget inside the iframe
+          output.postMessage({ type: "updateSummary", data: summary }, "*");
+        });
+
+      // Optional: listen for confirmation from widget
+      window.addEventListener("message", (event) => {
+        if (event.data.type === "widgetReady") {
+          // console.log("Widget loaded and ready to receive data.");
+        }
+      });
+    </script>
+  </body>
+</html>

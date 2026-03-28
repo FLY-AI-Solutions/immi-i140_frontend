@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ImmI-GeniUS | AI NIW I-140 Eligibility Evaluator</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../assets/css/theme.css" />
+
+    <style>
+      :root {
+        /* Color Palette from Immigenius Logo */
+        --primary-taupe: #b9b0a2; /* Muted, sophisticated beige/taupe for accents */
+        --dark-charcoal: #1c1c1c; /* Deep charcoal for text and dark elements */
+        --text-secondary: #525252; /* Softer gray for paragraphs */
+        --background-light: #fbfbfb; /* Very light, clean background */
+        --border-color: #eaeaea; /* Subtle border color */
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--background-light);
+        color: var(--dark-charcoal);
+        opacity: 0;
+        animation: fadeIn 1.2s ease-in-out forwards;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      /* Header */
+      .header-nav {
+        background-color: white;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .navbar-brand img {
+        max-height: 45px; /* Adjust logo size */
+      }
+
+      .btn-header {
+        background-color: var(--primary-taupe);
+        color: white;
+        border-radius: 8px;
+        font-weight: 500;
+        padding: 0.6rem 1.2rem;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+      }
+
+      .btn-header:hover {
+        background-color: #a39a8e; /* Darker shade of taupe */
+        color: white;
+        transform: translateY(-2px);
+      }
+
+      /* Hero Section */
+      .hero-section {
+        padding: 6rem 1rem;
+        text-align: center;
+      }
+
+      .hero-content {
+        max-width: 800px;
+        margin: auto;
+      }
+
+      .ai-name {
+        color: var(--primary-taupe);
+        font-weight: 800;
+      }
+
+      .hero-content h1 {
+        font-weight: 800;
+        font-size: clamp(2.5rem, 5vw, 3.8rem);
+        color: var(--dark-charcoal);
+        margin-bottom: 1.5rem;
+        letter-spacing: -1.5px;
+      }
+
+      .hero-content p.lead {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+        max-width: 650px;
+        margin: 0 auto 2.5rem;
+      }
+
+      .btn-hero {
+        background-color: var(--dark-charcoal);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        padding: 0.9rem 2.5rem;
+        transition: background-color 0.3s ease, transform 0.2s ease,
+          box-shadow 0.3s ease;
+      }
+
+      .btn-hero:hover {
+        background-color: #333;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Features Section */
+      .features-section {
+        padding: 4rem 1rem;
+        background-color: #ffffff;
+        border-top: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .features-section h2 {
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 3rem;
+      }
+
+      .feature-item {
+        background-color: var(--background-light);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        border-left: 5px solid var(--primary-taupe);
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .feature-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.05);
+      }
+
+      .feature-item strong {
+        color: var(--dark-charcoal);
+        font-size: 1.1rem;
+      }
+      .feature-item small {
+        color: var(--text-secondary);
+      }
+
+      /* Footer */
+      footer {
+        text-align: center;
+        padding: 3rem 1rem;
+        background: #fff;
+      }
+
+      .powered-by-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .powered-by-text {
+        color: var(--text-secondary);
+        font-style: italic;
+        margin: 0;
+        font-size: 0.9rem;
+        max-width: 400px;
+      }
+
+      .powered-by-logo {
+        max-height: 35px;
+        opacity: 0.8;
+      }
+
+      .footer-copyright {
+        margin-top: 2rem;
+        color: #999;
+        font-size: 0.85rem;
+      }
+    </style>
+  </head>
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-R65K06V97N"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-R65K06V97N');
+</script>
+  <body>
+    <header class="header-nav">
+      <div class="container d-flex justify-content-between align-items: center">
+        <a class="navbar-brand" href="#">
+          <img src="../../assets/images/immigenius-logo.png" alt="ImmI-GeniUS Logo" />
+        </a>
+        <a href="../intake/portfolio.html" class="btn btn-header"> Get Started </a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero-section">
+        <div class="hero-content">
+          <h1>
+            AI-Powered NIW I-140 Eligibility Evaluation by
+            <span class="ai-name">ImmI-GeniUS</span>
+          </h1>
+          <p class="lead">
+            Instantly assess your professional profile against USCIS standards
+            for a National Interest Waiver petition with our proprietary
+            AI-driven analysis.
+          </p>
+          <a href="../intake/portfolio.html" class="btn btn-hero">
+            Start My Evaluation Now
+          </a>
+        </div>
+      </section>
+
+      <section class="features-section">
+        <div class="container">
+          <h2>A Comprehensive AI-Powered Analysis</h2>
+          <div class="row justify-content-center">
+            <div class="col-lg-10">
+              <div class="feature-item">
+                <strong class="d-block mb-1"
+                  >Detailed Prongs Evaluation of NIW EB Eligibility</strong
+                >
+                <small
+                  >Advanced analysis of the three
+                  <em>Matter of Dhanasar</em> prongs—substantial merit/national
+                  importance, well-positionedness, and U.S. interest—customized
+                  to your unique profile for unmatched clarity.</small
+                >
+              </div>
+              <div class="feature-item">
+                <strong class="d-block mb-1"
+                  >Profile Comparison & National Importance/Benefit Waiver
+                  Assessment</strong
+                >
+                <small
+                  >Compare your achievements against 100+ adjudicated NIW cases,
+                  with a comprehensive evaluation of national importance and
+                  benefit waiver to highlight your competitive strengths.</small
+                >
+              </div>
+              <div class="feature-item">
+                <strong class="d-block mb-1"
+                  >Determination of Well-Positionedness</strong
+                >
+                <small
+                  >Precise assessment of your "well-positioned" status,
+                  including approval probability insights and a clear breakdown
+                  of your profile’s strengths and areas for improvement.</small
+                >
+              </div>
+              <div class="feature-item">
+                <strong class="d-block mb-1"
+                  >Next Steps & Recommendations to Strengthen Your
+                  Profile</strong
+                >
+                <small
+                  >Actionable roadmap with strategic evidence suggestions,
+                  letter of support templates, timeline guidance, and proven
+                  tactics to enhance your approval odds by up to 40%.</small
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container">
+        <div class="powered-by-container">
+          <p class="powered-by-text">
+            <em
+              >Powered by ImmI-GeniUS AI, leveraging premium USCIS NIW case
+              data.</em
+            >
+          </p>
+          <img
+            src="../../assets/images/flyai-logo.png"
+            alt="FLY AI Solutions LLC Logo"
+            class="powered-by-logo"
+          />
+        </div>
+        <p class="footer-copyright">
+          &copy; 2025 ImmI-GeniUS. All rights reserved. A service of FLY AI
+          Solutions LLC.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

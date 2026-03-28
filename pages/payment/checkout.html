@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Payment for NIW Eligibility Report - by ImmiGeniUS">
+  <title>ImmiGeniUS I-140 Payment</title>
+  <link rel="stylesheet" href="../../assets/css/base.css">
+  <link rel="stylesheet" href="../../assets/css/theme.css">
+  <script src="https://js.stripe.com/v3/" defer></script>
+  <script src="../../assets/js/app-config.js" defer></script>
+  <script src="../../assets/js/checkout.js" defer></script>
+</head>
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-R65K06V97N"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-R65K06V97N');
+</script>
+<body>
+  <header>
+    <h1>Immigenius by FLY-AI-Solutions</h1>
+  </header>
+  <main>
+    <section id="coupon-section">
+      <h2>Have a Coupon?</h2>
+      <div class="coupon-form">
+        <input type="text" id="coupon-code" placeholder="Enter coupon code" aria-label="Coupon Code">
+        <button id="apply-coupon-btn">Apply</button>
+      </div>
+      <div id="coupon-message" aria-live="polite"></div>
+    </section>
+
+    <hr>
+
+    <section id="loading" aria-live="polite">
+      <p>Loading payment form...</p>
+    </section>
+    <section id="checkout" aria-live="polite" class="hidden">
+      </section>
+    <section id="error-message" class="hidden" aria-live="polite">
+      <h2>Payment Error</h2>
+      <p id="error-text">Unable to load payment form. Please try again or contact <a href="mailto:support@immigenius.us">support@immigenius.us</a>.</p>
+    </section>
+  </main>
+</body>
+</html>

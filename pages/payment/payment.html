@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Payment Page</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../assets/css/base.css" />
+    <link rel="stylesheet" href="../../assets/css/theme.css" />
+    <script src="https://js.stripe.com/v3/" defer></script>
+    <script src="../../assets/js/app-config.js" defer></script>
+    <script src="../../assets/js/checkout.js" defer></script>
+  </head>
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-R65K06V97N"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-R65K06V97N');
+</script>
+
+  <body class="bg-light page-shell">
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-lg-10 col-md-12">
+          <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body p-5">
+              <h3 class="mb-4 text-primary fw-bold text-center">
+                Take Control of Your NIW Journey: Your Detailed Report is Waiting!
+              </h3>
+              <div class="text-center my-3 fs-4 text-primary">
+                Reference ID: #<span id="refId" class="fw-bold text-dark"></span>
+              </div>
+              <p class="text-secondary mb-4 text-center">
+                Your submission has been successfully processed and securely stored in our system. To access your detailed case results, please complete the payment below using the <strong>same email address</strong> provided in the form to ensure seamless access.
+              </p>
+
+              <hr class="my-4" />
+
+              <div class="row">
+                <!-- Left Column: Report Contents -->
+                <div class="col-lg-6 col-md-6 mb-4">
+                  <h5 class="mb-4 text-primary fw-bold">
+                    Unlock Your Personalized NIW Eligibility Report
+                  </h5>
+                  <ul class="list-unstyled">
+                    <li class="mb-3 p-3 bg-light rounded-3 border-start border-primary border-4">
+                      <strong class="text-primary">Detailed Prongs Evaluation of NIW EB Eligibility</strong><br>
+                      <small class="text-muted">Advanced analysis of the three <em>Matter of Dhanasar</em> prongs—substantial merit/national importance, well-positionedness, and U.S. interest—customized to your unique profile for unmatched clarity.</small>
+                    </li>
+                    <li class="mb-3 p-3 bg-light rounded-3 border-start border-primary border-4">
+                      <strong class="text-primary">Profile Comparison & National Importance/Benefit Waiver Assessment</strong><br>
+                      <small class="text-muted">Compare your achievements against 100+ adjudicated NIW cases, with a comprehensive evaluation of national importance and benefit waiver to highlight your competitive strengths.</small>
+                    </li>
+                    <li class="mb-3 p-3 bg-light rounded-3 border-start border-primary border-4">
+                      <strong class="text-primary">Determination of Well-Positionedness</strong><br>
+                      <small class="text-muted">Precise assessment of your "well-positioned" status, including approval probability insights and a clear breakdown of your profile’s strengths and areas for improvement.</small>
+                    </li>
+                    <li class="mb-3 p-3 bg-light rounded-3 border-start border-primary border-4">
+                      <strong class="text-primary">Next Steps & Recommendations to Strengthen Your Profile</strong><br>
+                      <small class="text-muted">Actionable roadmap with strategic evidence suggestions, letter of support templates, timeline guidance, and proven tactics to enhance your approval odds by up to 40%.</small>
+                    </li>
+                  </ul>
+                  <p class="text-success fw-bold mt-3">
+                    <em>Powered by ImmI-GeniUS AI, leveraging premium USCIS NIW case data.</em>
+                  </p>
+                </div>
+
+                <!-- Right Column: Payment Form -->
+                <div class="col-lg-6 col-md-6 mb-4">
+                  <h5 class="mb-4 text-primary fw-bold text-center">
+                    Complete Your Payment to Access Your Report
+                  </h5>
+                  <section id="loading" aria-live="polite" class="text-center">
+                    <p>Loading payment form...</p>
+                  </section>
+                  <section id="checkout" aria-live="polite">
+                    <!-- Stripe embedded checkout form will be inserted here -->
+                  </section>
+                  <section id="error-message" class="hidden text-center" aria-live="polite">
+                    <h2 class="h5 text-danger">Payment Error</h2>
+                    <p id="error-text">
+                      Unable to load payment form. Please try again or contact
+                      <a href="mailto:support@immigenius.us">support@immigenius.us</a>.
+                    </p>
+                  </section>
+                  <div class="mt-4 text-muted text-center" style="font-size: 0.9rem">
+                    <em>Note: Payment verification may take a few moments. Upon completion, you will automatically gain access to your case results.</em>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Grab the data_id from URL query
+      const urlParams = new URLSearchParams(window.location.search);
+      const dataId = urlParams.get("rB");
+
+      if (dataId) {
+        document.getElementById("refId").textContent = dataId;
+      } else {
+        document.getElementById("refId").textContent = "Unavailable";
+      }
+    </script>
+  </body>
+</html>

@@ -3,6 +3,7 @@ const iframe = document.getElementById("widgetFrame");
 let activeSessionId = "";
 let activeReferenceId = "";
 let activeCustomerEmail = "";
+let activeSummary = null;
 
 function ensureToastStack() {
   let stack = document.getElementById(toastStackId);
@@ -69,6 +70,15 @@ function showError(message) {
   showToast(message, "error", 5000);
 }
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 async function waitForIframeReady() {
   if (!iframe.contentDocument || !iframe.contentDocument.body) {
     await new Promise((resolve) =>
@@ -79,9 +89,12 @@ async function waitForIframeReady() {
 }
 
 function buildPrintHtml() {
-  const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-  const reportMarkup = iframeDoc.body?.innerHTML || iframeDoc.documentElement.innerHTML;
   const referenceId = activeReferenceId || "N/A";
+  const logoUrl = new URL(
+    "../../assets/images/immigenius-logo.png",
+    window.location.href
+  ).toString();
+  const reportMarkup = buildPrintableSummaryMarkup();
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -112,21 +125,23 @@ function buildPrintHtml() {
         background: linear-gradient(135deg, #f7f4ef 0%, #ece5d9 100%);
         border: 1px solid #d8cec0;
         border-radius: 18px;
-        padding: 22mm 16mm 12mm;
+        padding: 18mm 16mm 12mm;
         margin-bottom: 10mm;
         overflow: hidden;
       }
-      .page-header::after {
-        content: "FLYAI SOLUTIONS";
+      .page-header::before {
+        content: "";
         position: absolute;
-        right: -6mm;
-        top: 5mm;
-        font-size: 26pt;
-        font-weight: 700;
-        letter-spacing: 2px;
-        color: rgba(185, 176, 162, 0.2);
+        inset: 0;
+        background: radial-gradient(circle at top right, rgba(185, 176, 162, 0.18), transparent 45%);
+      }
+      .watermark-logo {
+        position: absolute;
+        right: 10mm;
+        top: 7mm;
+        width: 54mm;
+        opacity: 0.1;
         transform: rotate(-8deg);
-        white-space: nowrap;
       }
       .eyebrow {
         font-family: Arial, sans-serif;
@@ -135,6 +150,8 @@ function buildPrintHtml() {
         text-transform: uppercase;
         color: #7d7263;
         margin-bottom: 8px;
+        position: relative;
+        z-index: 1;
       }
       .page-title {
         font-family: Arial, sans-serif;
@@ -143,11 +160,15 @@ function buildPrintHtml() {
         font-weight: 700;
         margin: 0 0 8px;
         color: #1c1c1c;
+        position: relative;
+        z-index: 1;
       }
       .page-meta {
         font-family: Arial, sans-serif;
         font-size: 10pt;
         color: #5b5b5b;
+        position: relative;
+        z-index: 1;
       }
       .report-body {
         background: #ffffff;
@@ -155,39 +176,60 @@ function buildPrintHtml() {
         border-radius: 16px;
         padding: 12mm;
       }
-      .report-body * {
-        font-family: "Times New Roman", Times, serif !important;
+      .report-title {
+        font-family: Arial, sans-serif;
+        font-size: 19pt;
+        margin: 0 0 9mm;
+        color: #2f2b28;
       }
-      .report-body h1,
-      .report-body h2,
-      .report-body h3,
-      .report-body h4,
-      .report-body h5,
-      .report-body h6 {
-        font-family: Arial, sans-serif !important;
-        color: #2f2b28 !important;
-        margin-top: 0;
-        page-break-after: avoid;
+      .pathway-card {
+        border: 1px solid #e3ddd2;
+        border-left: 6px solid #7d7263;
+        border-radius: 12px;
+        padding: 7mm 6mm;
+        margin-bottom: 7mm;
+        break-inside: avoid;
       }
-      .report-body h1 { font-size: 22pt !important; }
-      .report-body h2 { font-size: 18pt !important; }
-      .report-body h3 { font-size: 15pt !important; }
-      .report-body p,
-      .report-body li,
-      .report-body span,
-      .report-body div {
-        font-size: 12pt !important;
-        color: #1c1c1c !important;
+      .pathway-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 8mm;
+        align-items: baseline;
+        margin-bottom: 4mm;
       }
-      .report-body table {
-        width: 100% !important;
-        border-collapse: collapse !important;
+      .pathway-label {
+        font-family: Arial, sans-serif;
+        font-size: 15pt;
+        font-weight: 700;
+        color: #2f2b28;
       }
-      .report-body th,
-      .report-body td {
-        border: 1px solid #d8cec0 !important;
-        padding: 8px 10px !important;
-        font-size: 11.5pt !important;
+      .pathway-status {
+        font-family: Arial, sans-serif;
+        font-size: 10pt;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #6d6457;
+      }
+      .pathway-content {
+        font-family: "Times New Roman", Times, serif;
+        font-size: 12pt;
+        color: #1c1c1c;
+      }
+      .pathway-content p {
+        margin: 0 0 3mm;
+      }
+      .pathway-content h4 {
+        font-family: Arial, sans-serif;
+        font-size: 13pt;
+        margin: 5mm 0 2.5mm;
+        color: #2f2b28;
+      }
+      .pathway-content ul {
+        margin: 0 0 4mm 6mm;
+        padding-left: 6mm;
+      }
+      .pathway-content li {
+        margin-bottom: 1.5mm;
       }
       .print-footer {
         margin-top: 8mm;
@@ -210,7 +252,8 @@ function buildPrintHtml() {
   <body>
     <div class="page-shell">
       <section class="page-header">
-        <div class="eyebrow">FlyAI Solutions</div>
+        <img class="watermark-logo" src="${logoUrl}" alt="Immigenius Logo" />
+        <div class="eyebrow">Immigenius by FlyAI Solutions</div>
         <h1 class="page-title">NIW Eligibility Report</h1>
         <div class="page-meta">Reference ID: #${referenceId}</div>
       </section>
@@ -226,6 +269,101 @@ function buildPrintHtml() {
     </script>
   </body>
 </html>`;
+}
+
+function formatSectionContent(sectionContent) {
+  const normalized = sectionContent
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>\s*<p>/gi, "\n\n")
+    .replace(/<\/?[^>]+>/g, "")
+    .replace(/\r/g, "")
+    .trim();
+
+  if (!normalized) {
+    return "";
+  }
+
+  const lines = normalized
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  let html = "";
+  let bullets = [];
+
+  const flushBullets = () => {
+    if (!bullets.length) return;
+    html += `<ul>${bullets.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
+    bullets = [];
+  };
+
+  lines.forEach((line) => {
+    if (line.startsWith("-")) {
+      bullets.push(line.replace(/^-+\s*/, "").trim());
+    } else {
+      flushBullets();
+      html += `<p>${escapeHtml(line)}</p>`;
+    }
+  });
+
+  flushBullets();
+  return html;
+}
+
+function formatSummarySections(summaryHtml) {
+  const normalized = String(summaryHtml || "").replace(/\r/g, "");
+  const regex =
+    /(Strengths|Weak points|Recommended Next Steps)\s*:?\s*([\s\S]*?)(?=(Strengths|Weak points|Recommended Next Steps)\s*:|$)/gi;
+
+  let result = "";
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(normalized)) !== null) {
+    const leading = normalized.slice(lastIndex, match.index).trim();
+    if (leading) {
+      result += formatSectionContent(leading);
+    }
+
+    const heading = match[1];
+    const content = match[2] || "";
+    result += `<h4>${escapeHtml(heading)}</h4>${formatSectionContent(content)}`;
+    lastIndex = regex.lastIndex;
+  }
+
+  const trailing = normalized.slice(lastIndex).trim();
+  if (trailing) {
+    result += formatSectionContent(trailing);
+  }
+
+  return result || formatSectionContent(normalized);
+}
+
+function buildPrintableSummaryMarkup() {
+  const summary = activeSummary || {};
+  const title = escapeHtml(summary.title || "NIW Case Summary");
+  const pathways = Array.isArray(summary.pathways) ? summary.pathways : [];
+
+  const pathwayMarkup = pathways
+    .map((pathway) => {
+      const badgeColor = pathway.badgeColor || "#7d7263";
+      return `
+        <article class="pathway-card" style="border-left-color:${escapeHtml(
+          badgeColor
+        )}">
+          <div class="pathway-head">
+            <div class="pathway-label">${escapeHtml(pathway.label || "")}</div>
+            <div class="pathway-status">${escapeHtml(pathway.status || "")}</div>
+          </div>
+          <div class="pathway-content">
+            ${formatSummarySections(pathway.summary || "")}
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+
+  return `<h2 class="report-title">${title}</h2>${pathwayMarkup}`;
 }
 
 async function printReport() {
@@ -362,8 +500,9 @@ async function initialize() {
       return;
     }
 
+    activeSummary = result.json_data;
     const output = iframe.contentWindow;
-    output.postMessage({ type: "updateSummary", data: result.json_data }, "*");
+    output.postMessage({ type: "updateSummary", data: activeSummary }, "*");
 
     if (!isEmailLink) {
       await emailReportLink();

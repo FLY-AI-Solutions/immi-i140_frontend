@@ -71,125 +71,181 @@ function showError(message) {
 
 async function waitForIframeReady() {
   if (!iframe.contentDocument || !iframe.contentDocument.body) {
-    await new Promise((resolve) => iframe.addEventListener("load", resolve, { once: true }));
+    await new Promise((resolve) =>
+      iframe.addEventListener("load", resolve, { once: true })
+    );
   }
   await new Promise((resolve) => setTimeout(resolve, 1400));
 }
 
-async function buildPdfDocument() {
-  await waitForIframeReady();
+function buildPrintHtml() {
   const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-
-  const tempDiv = document.createElement("div");
-  tempDiv.style.position = "absolute";
-  tempDiv.style.left = "-9999px";
-  tempDiv.style.background = "#fff";
-  tempDiv.style.padding = "20px";
-  tempDiv.style.width = iframe.clientWidth + "px";
-  tempDiv.innerHTML = iframeDoc.documentElement.innerHTML;
-  document.body.appendChild(tempDiv);
-
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  const canvas = await html2canvas(tempDiv, {
-    scale: 1.2,
-    backgroundColor: "#fff",
-    useCORS: true,
-    logging: false,
-  });
-
-  document.body.removeChild(tempDiv);
-
-  if (!canvas.width || !canvas.height) {
-    throw new Error("Canvas is empty.");
-  }
-
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF("p", "pt", "a4");
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 20;
-  const imgWidth = Math.floor(pageWidth - margin * 2);
-  const imgScale = imgWidth / canvas.width;
-
-  let yOffset = 0;
-  while (yOffset < canvas.height) {
-    const remainingHeightPx = canvas.height - yOffset;
-    const pageCanvasHeightPx = Math.min(
-      remainingHeightPx,
-      (pageHeight - margin * 2) / imgScale
-    );
-
-    const pageCanvas = document.createElement("canvas");
-    pageCanvas.width = canvas.width;
-    pageCanvas.height = pageCanvasHeightPx;
-
-    const ctx = pageCanvas.getContext("2d");
-    ctx.drawImage(
-      canvas,
-      0,
-      yOffset,
-      canvas.width,
-      pageCanvasHeightPx,
-      0,
-      0,
-      canvas.width,
-      pageCanvasHeightPx
-    );
-
-    const imgData = pageCanvas.toDataURL("image/jpeg", 1.0);
-    pdf.addImage(
-      imgData,
-      "JPEG",
-      margin,
-      margin,
-      imgWidth,
-      pageCanvasHeightPx * imgScale
-    );
-
-    yOffset += pageCanvasHeightPx;
-    if (yOffset < canvas.height) {
-      pdf.addPage();
-    }
-  }
-
-  pdf.addPage();
-  pdf.setFont("helvetica", "bolditalic");
-  pdf.setFontSize(16);
-  pdf.setTextColor(40, 40, 40);
-  pdf.text("Disclaimer", margin, 80);
-
-  pdf.setFont("helvetica", "italic");
-  pdf.setFontSize(12);
-  pdf.setTextColor(80, 80, 80);
-  const disclaimer =
-    "This report has been generated automatically using AI reasoning based on patterns derived from National Interest Waiver (NIW) cases. It is for informational purposes only and is NOT legal advice. For specific legal guidance, consult a qualified immigration attorney.";
-  pdf.text(disclaimer, margin, 120, { maxWidth: pageWidth - margin * 2 });
-
+  const reportMarkup = iframeDoc.body?.innerHTML || iframeDoc.documentElement.innerHTML;
   const referenceId = activeReferenceId || "N/A";
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(12);
-  pdf.setTextColor(50, 50, 50);
-  pdf.text(`Reference ID: #${referenceId}`, margin, 200);
 
-  return {
-    pdf,
-    filename: `Immigenius_Report#${referenceId}.pdf`,
-  };
+  return `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>FLYAI Solutions Report #${referenceId}</title>
+    <style>
+      @page {
+        size: A4;
+        margin: 18mm 16mm 18mm 16mm;
+      }
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: #eef1f4;
+      }
+      body {
+        font-family: "Times New Roman", Times, serif;
+        font-size: 12pt;
+        line-height: 1.55;
+        color: #1c1c1c;
+      }
+      .page-shell {
+        width: 100%;
+      }
+      .page-header {
+        position: relative;
+        background: linear-gradient(135deg, #f7f4ef 0%, #ece5d9 100%);
+        border: 1px solid #d8cec0;
+        border-radius: 18px;
+        padding: 22mm 16mm 12mm;
+        margin-bottom: 10mm;
+        overflow: hidden;
+      }
+      .page-header::after {
+        content: "FLYAI SOLUTIONS";
+        position: absolute;
+        right: -6mm;
+        top: 5mm;
+        font-size: 26pt;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: rgba(185, 176, 162, 0.2);
+        transform: rotate(-8deg);
+        white-space: nowrap;
+      }
+      .eyebrow {
+        font-family: Arial, sans-serif;
+        font-size: 9pt;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #7d7263;
+        margin-bottom: 8px;
+      }
+      .page-title {
+        font-family: Arial, sans-serif;
+        font-size: 24pt;
+        line-height: 1.2;
+        font-weight: 700;
+        margin: 0 0 8px;
+        color: #1c1c1c;
+      }
+      .page-meta {
+        font-family: Arial, sans-serif;
+        font-size: 10pt;
+        color: #5b5b5b;
+      }
+      .report-body {
+        background: #ffffff;
+        border: 1px solid #e6e1d7;
+        border-radius: 16px;
+        padding: 12mm;
+      }
+      .report-body * {
+        font-family: "Times New Roman", Times, serif !important;
+      }
+      .report-body h1,
+      .report-body h2,
+      .report-body h3,
+      .report-body h4,
+      .report-body h5,
+      .report-body h6 {
+        font-family: Arial, sans-serif !important;
+        color: #2f2b28 !important;
+        margin-top: 0;
+        page-break-after: avoid;
+      }
+      .report-body h1 { font-size: 22pt !important; }
+      .report-body h2 { font-size: 18pt !important; }
+      .report-body h3 { font-size: 15pt !important; }
+      .report-body p,
+      .report-body li,
+      .report-body span,
+      .report-body div {
+        font-size: 12pt !important;
+        color: #1c1c1c !important;
+      }
+      .report-body table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+      }
+      .report-body th,
+      .report-body td {
+        border: 1px solid #d8cec0 !important;
+        padding: 8px 10px !important;
+        font-size: 11.5pt !important;
+      }
+      .print-footer {
+        margin-top: 8mm;
+        font-family: Arial, sans-serif;
+        font-size: 9pt;
+        color: #6f6f6f;
+        text-align: center;
+      }
+      @media print {
+        html, body {
+          background: #ffffff;
+        }
+        .page-header,
+        .report-body {
+          box-shadow: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <section class="page-header">
+        <div class="eyebrow">FlyAI Solutions</div>
+        <h1 class="page-title">NIW Eligibility Report</h1>
+        <div class="page-meta">Reference ID: #${referenceId}</div>
+      </section>
+      <section class="report-body">${reportMarkup}</section>
+      <div class="print-footer">
+        Generated by FLYAI Solutions. This report is informational and not legal advice.
+      </div>
+    </div>
+    <script>
+      window.onload = function () {
+        window.print();
+      };
+    </script>
+  </body>
+</html>`;
 }
 
-async function downloadPdfReport() {
+async function printReport() {
   try {
-    const { pdf, filename } = await buildPdfDocument();
-    pdf.save(filename);
-    showToast("PDF report downloaded.", "success");
+    await waitForIframeReady();
+    const printWindow = window.open("", "_blank", "width=980,height=760");
+    if (!printWindow) {
+      throw new Error("Unable to open the print view. Please allow pop-ups for this site.");
+    }
+    printWindow.document.open();
+    printWindow.document.write(buildPrintHtml());
+    printWindow.document.close();
+    showToast("Print view opened successfully.", "success");
   } catch (error) {
-    console.error("PDF generation failed:", error);
-    showToast("Failed to generate the PDF report.", "error", 5000);
+    console.error("Print view failed:", error);
+    showToast(error.message, "error", 5000);
   }
 }
 
-async function emailPdfReport() {
+async function emailReportLink() {
   if (!activeCustomerEmail) {
     return;
   }
@@ -202,15 +258,17 @@ async function emailPdfReport() {
   try {
     showToast("Preparing your report email...", "info");
     const { apiBaseUrl } = window.ImmiAppConfig;
-    const downloadUrl = new URL(window.location.href);
-    downloadUrl.searchParams.set("download", "1");
+    const reportUrl = new URL(window.location.href);
+    reportUrl.searchParams.set("print", "1");
+    reportUrl.searchParams.set("emailed", "1");
+
     const response = await fetch(`${apiBaseUrl}/email-report`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         recipient_email: activeCustomerEmail,
         reference_id: activeReferenceId || null,
-        download_url: downloadUrl.toString(),
+        download_url: reportUrl.toString(),
       }),
     });
 
@@ -233,7 +291,8 @@ async function initialize() {
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get("session_id");
     const rB = urlParams.get("rB");
-    const shouldAutoDownload = urlParams.get("download") === "1";
+    const shouldAutoPrint = urlParams.get("print") === "1";
+    const isEmailLink = urlParams.get("emailed") === "1";
 
     activeSessionId = sessionId || "";
     activeReferenceId = rB || "";
@@ -243,10 +302,13 @@ async function initialize() {
       return;
     }
 
-    const response = await fetch(`${apiBaseUrl}/session-status?session_id=${sessionId}`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
+    const response = await fetch(
+      `${apiBaseUrl}/session-status?session_id=${sessionId}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -300,12 +362,15 @@ async function initialize() {
       return;
     }
 
-    const summary = result.json_data;
     const output = iframe.contentWindow;
-    output.postMessage({ type: "updateSummary", data: summary }, "*");
-    await emailPdfReport();
-    if (shouldAutoDownload) {
-      await downloadPdfReport();
+    output.postMessage({ type: "updateSummary", data: result.json_data }, "*");
+
+    if (!isEmailLink) {
+      await emailReportLink();
+    }
+
+    if (shouldAutoPrint) {
+      await printReport();
     }
   } catch (error) {
     console.error("Error in initialize:", error);
@@ -315,7 +380,9 @@ async function initialize() {
 
 document.addEventListener("DOMContentLoaded", () => {
   ensureToastStack();
-  const pdfButton = document.querySelector(".bi-file-earmark-pdf")?.closest("button");
-  pdfButton?.addEventListener("click", downloadPdfReport);
+  const printButton = document
+    .querySelector(".bi-printer")
+    ?.closest("button");
+  printButton?.addEventListener("click", printReport);
   initialize();
 });

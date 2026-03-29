@@ -200,17 +200,17 @@ async function emailPdfReport() {
   }
 
   try {
-    showToast("Preparing your PDF report for email...", "info");
+    showToast("Preparing your report email...", "info");
     const { apiBaseUrl } = window.ImmiAppConfig;
-    const { pdf, filename } = await buildPdfDocument();
+    const downloadUrl = new URL(window.location.href);
+    downloadUrl.searchParams.set("download", "1");
     const response = await fetch(`${apiBaseUrl}/email-report`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         recipient_email: activeCustomerEmail,
-        pdf_base64: pdf.output("datauristring"),
         reference_id: activeReferenceId || null,
-        filename,
+        download_url: downloadUrl.toString(),
       }),
     });
 
@@ -220,7 +220,7 @@ async function emailPdfReport() {
     }
 
     sessionStorage.setItem(sessionKey, "1");
-    showToast(`Report emailed to ${activeCustomerEmail}.`, "success", 5000);
+    showToast(`Report email sent to ${activeCustomerEmail}.`, "success", 5000);
   } catch (error) {
     console.error("Email report failed:", error);
     showToast(error.message, "error", 5000);
@@ -233,6 +233,7 @@ async function initialize() {
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get("session_id");
     const rB = urlParams.get("rB");
+    const shouldAutoDownload = urlParams.get("download") === "1";
 
     activeSessionId = sessionId || "";
     activeReferenceId = rB || "";
@@ -303,6 +304,9 @@ async function initialize() {
     const output = iframe.contentWindow;
     output.postMessage({ type: "updateSummary", data: summary }, "*");
     await emailPdfReport();
+    if (shouldAutoDownload) {
+      await downloadPdfReport();
+    }
   } catch (error) {
     console.error("Error in initialize:", error);
     showError("An error occurred. Please try again later.");

@@ -194,10 +194,69 @@
         align-items: center;
         flex-wrap: wrap;
       }
+      .load-button-floating {
+        position: fixed;
+        top: 2rem;
+        right: 2rem;
+        z-index: 1050;
+      }
       .load-status {
         min-height: 1.5rem;
         color: var(--text-secondary);
         font-size: 0.95rem;
+      }
+      .toast-stack {
+        position: fixed;
+        left: 1.5rem;
+        bottom: 1.5rem;
+        z-index: 2000;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .toast-card {
+        min-width: 280px;
+        max-width: 360px;
+        background: rgba(28, 28, 28, 0.96);
+        color: #fff;
+        border-radius: 14px;
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
+        padding: 0.95rem 1rem;
+        border-left: 4px solid var(--primary-taupe);
+        opacity: 0;
+        transform: translateY(18px);
+        transition: opacity 0.25s ease, transform 0.25s ease;
+      }
+      .toast-card.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .toast-card.toast-success {
+        border-left-color: #12b76a;
+      }
+      .toast-card.toast-error {
+        border-left-color: #f04438;
+      }
+      .toast-card.toast-info {
+        border-left-color: #7c8aa5;
+      }
+      .otp-card .modal-content {
+        border: none;
+        border-radius: 18px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2);
+      }
+      .otp-card .modal-header {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+      .otp-card .modal-body {
+        padding-top: 0.5rem;
+      }
+      .otp-card .otp-input {
+        letter-spacing: 0.45rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        text-align: center;
       }
       .offer-letter,
       .experience-dates,
@@ -223,6 +282,21 @@
       @media (max-width: 1024px) {
         img[alt="Logo"] {
           display: none !important;
+        }
+      }
+      @media (max-width: 768px) {
+        .load-button-floating {
+          top: 1rem;
+          right: 1rem;
+        }
+        .toast-stack {
+          left: 1rem;
+          right: 1rem;
+          bottom: 1rem;
+        }
+        .toast-card {
+          max-width: none;
+          min-width: 0;
         }
       }
     </style>
@@ -254,6 +328,9 @@
         height: auto;
       "
     />
+    <button type="button" class="btn btn-load load-button-floating" id="loadPortfolioBtn">
+      Load .flyai
+    </button>
     <form>
       <header class="header">
         <h1>
@@ -680,9 +757,6 @@
 
         <div class="d-flex justify-content-end portfolio-actions mb-5">
           <div id="loadStatus" class="load-status me-auto" aria-live="polite"></div>
-          <button type="button" class="btn btn-load" id="loadPortfolioBtn">
-            Load .flyai
-          </button>
           <button type="button" class="btn btn-save" id="savePortfolioBtn">
             Save
           </button>
@@ -696,6 +770,7 @@
       accept=".flyai"
       style="display: none"
     />
+    <div id="toastStack" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
 
     <div
       class="modal fade"
@@ -731,6 +806,53 @@
             >
               Save
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="modal fade otp-card"
+      id="otpModal"
+      tabindex="-1"
+      aria-labelledby="otpModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div>
+              <h5 class="modal-title" id="otpModalLabel">Verify Your Email</h5>
+              <p class="text-secondary mb-0 mt-1">
+                Enter the 6-digit code sent to <strong id="otpEmailLabel"></strong>
+              </p>
+            </div>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <input
+                id="otpInput"
+                type="text"
+                class="form-control otp-input"
+                inputmode="numeric"
+                maxlength="6"
+                placeholder="000000"
+              />
+            </div>
+            <div id="otpStatus" class="small text-secondary mb-3"></div>
+            <div class="d-flex justify-content-between gap-2">
+              <button type="button" class="btn btn-outline-secondary" id="otpResendBtn">
+                Resend Code
+              </button>
+              <button type="button" class="btn btn-submit" id="otpVerifyBtn">
+                Verify Email
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -773,11 +895,24 @@
       const modalTitle = document.getElementById("connectModalLabel");
       const modalBody = document.getElementById("modal-body");
       const flyaiFileInput = document.getElementById("flyaiFileInput");
+      const otpModalEl = document.getElementById("otpModal");
+      const otpModal = new bootstrap.Modal(otpModalEl);
+      const otpInput = document.getElementById("otpInput");
+      const otpStatus = document.getElementById("otpStatus");
+      const otpEmailLabel = document.getElementById("otpEmailLabel");
+      const otpVerifyBtn = document.getElementById("otpVerifyBtn");
+      const otpResendBtn = document.getElementById("otpResendBtn");
 
       const getForm = () => document.querySelector("form");
       const getLoadStatus = () => document.getElementById("loadStatus");
       const getSaveButton = () => document.getElementById("savePortfolioBtn");
       const getLoadButton = () => document.getElementById("loadPortfolioBtn");
+      const getToastStack = () => document.getElementById("toastStack");
+
+      let verifiedEmail = "";
+      let otpPromiseResolver = null;
+      let otpFlowEmail = "";
+      let otpResolved = false;
 
       // --- Helper Functions ---
       function generateYearOptions(
@@ -1240,6 +1375,84 @@
         button.textContent = busy ? busyLabel : idleLabel;
       }
 
+      function showToast(message, type = "info", duration = 3500) {
+        const stack = getToastStack();
+        if (!stack) return;
+
+        const toast = document.createElement("div");
+        toast.className = `toast-card toast-${type}`;
+        toast.textContent = message;
+        stack.appendChild(toast);
+
+        requestAnimationFrame(() => toast.classList.add("show"));
+
+        window.setTimeout(() => {
+          toast.classList.remove("show");
+          window.setTimeout(() => toast.remove(), 250);
+        }, duration);
+      }
+
+      function isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      }
+
+      async function sendOtpCode(email, isResend = false) {
+        const response = await fetch(
+          `${window.ImmiAppConfig.apiBaseUrl}/email/send-otp`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.detail ||
+              `Failed to ${isResend ? "resend" : "send"} the OTP code.`
+          );
+        }
+
+        otpStatus.textContent = isResend
+          ? "A fresh code has been sent. Please check your inbox."
+          : "We sent a verification code to your email.";
+        showToast(
+          isResend
+            ? "A new verification code was sent."
+            : "Verification code sent to your email.",
+          "success"
+        );
+      }
+
+      async function ensureEmailVerified(email) {
+        const normalizedEmail = email.trim().toLowerCase();
+        if (!isValidEmail(normalizedEmail)) {
+          showToast("Please enter a valid email address before submitting.", "error");
+          return false;
+        }
+
+        if (verifiedEmail === normalizedEmail) {
+          return true;
+        }
+
+        otpFlowEmail = normalizedEmail;
+        otpResolved = false;
+        otpEmailLabel.textContent = normalizedEmail;
+        otpInput.value = "";
+        otpStatus.textContent = "Sending verification code...";
+        otpVerifyBtn.disabled = false;
+        otpResendBtn.disabled = false;
+
+        await sendOtpCode(normalizedEmail);
+        otpModal.show();
+        otpInput.focus();
+
+        return new Promise((resolve) => {
+          otpPromiseResolver = resolve;
+        });
+      }
+
       function base64ToBlob(base64, mimeType = "application/octet-stream") {
         const binary = atob(base64);
         const bytes = new Uint8Array(binary.length);
@@ -1323,10 +1536,11 @@
           URL.revokeObjectURL(link.href);
           link.remove();
           setLoadStatus("Saved successfully. Your encrypted .flyai file is ready.");
+          showToast("Portfolio saved as a .flyai file.", "success");
         } catch (error) {
           console.error("Save error:", error);
           setLoadStatus(error.message, true);
-          alert(error.message);
+          showToast(error.message, "error", 4500);
         } finally {
           setButtonBusy(saveButton, false, "Save", "Saving...");
         }
@@ -1376,10 +1590,11 @@
           attachUploadListeners(document);
           restoreAttachmentState(payload.attachments || []);
           setLoadStatus(`${file.name} loaded successfully.`);
+          showToast(`${file.name} loaded successfully.`, "success");
         } catch (error) {
           console.error("Load error:", error);
           setLoadStatus(error.message, true);
-          alert(error.message);
+          showToast(error.message, "error", 4500);
         } finally {
           flyaiFileInput.value = "";
           setButtonBusy(loadButton, false, "Load .flyai", "Loading...");
@@ -1429,6 +1644,74 @@
         flyaiFileInput.addEventListener("change", () =>
           loadPortfolioFromFlyai(flyaiFileInput.files[0])
         );
+        otpVerifyBtn.addEventListener("click", async () => {
+          const otp = otpInput.value.trim();
+          if (!/^\d{6}$/.test(otp)) {
+            otpStatus.textContent = "Enter the 6-digit verification code.";
+            showToast("Enter a valid 6-digit OTP.", "error");
+            return;
+          }
+
+          setButtonBusy(otpVerifyBtn, true, "Verify Email", "Verifying...");
+          try {
+            const response = await fetch(
+              `${window.ImmiAppConfig.apiBaseUrl}/email/verify-otp`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: otpFlowEmail, otp }),
+              }
+            );
+
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({}));
+              throw new Error(
+                errorData.detail || "Failed to verify the email address."
+              );
+            }
+
+            verifiedEmail = otpFlowEmail;
+            otpResolved = true;
+            otpModal.hide();
+            if (otpPromiseResolver) {
+              otpPromiseResolver(true);
+              otpPromiseResolver = null;
+            }
+            showToast("Email verified successfully.", "success");
+          } catch (error) {
+            otpStatus.textContent = error.message;
+            showToast(error.message, "error", 4500);
+          } finally {
+            setButtonBusy(otpVerifyBtn, false, "Verify Email", "Verifying...");
+          }
+        });
+
+        otpResendBtn.addEventListener("click", async () => {
+          if (!otpFlowEmail) return;
+          setButtonBusy(otpResendBtn, true, "Resend Code", "Sending...");
+          try {
+            await sendOtpCode(otpFlowEmail, true);
+          } catch (error) {
+            otpStatus.textContent = error.message;
+            showToast(error.message, "error", 4500);
+          } finally {
+            setButtonBusy(otpResendBtn, false, "Resend Code", "Sending...");
+          }
+        });
+
+        otpInput.addEventListener("input", () => {
+          otpInput.value = otpInput.value.replace(/\D/g, "").slice(0, 6);
+        });
+
+        otpModalEl.addEventListener("hidden.bs.modal", () => {
+          if (!otpResolved && otpPromiseResolver) {
+            otpPromiseResolver(false);
+            otpPromiseResolver = null;
+            showToast("Email verification was cancelled.", "info");
+          }
+          otpResolved = false;
+          otpStatus.textContent = "";
+        });
       });
 
       //  Form Submission
@@ -1436,6 +1719,13 @@
         .querySelector("form")
         .addEventListener("submit", async function (e) {
           e.preventDefault();
+
+          const currentEmail =
+            document.getElementById("email")?.innerText.trim().toLowerCase() || "";
+          const emailVerified = await ensureEmailVerified(currentEmail);
+          if (!emailVerified) {
+            return;
+          }
 
           // --- Helper to get innerText safely ---
           const getText = (selector, parent = document) => {
@@ -1775,7 +2065,7 @@
             const summary = finalResult?.summarize_and_display?.output_parsed;
 
             if (!summary) {
-              alert("No summary data returned from the completed task!");
+              showToast("No summary data was returned from the completed task.", "error");
               spinner.style.display = "none";
               return;
             }
@@ -1806,7 +2096,7 @@
                   "Save-user-data API returned an error:",
                   saveResult.message
                 );
-                alert("Warning: Data saved partially or failed!");
+                showToast("Warning: data saved partially or failed.", "error");
               } else {
                 const dataId = saveResult.data_id;
                 window.location.href = `../payment/payment.html?rB=${encodeURIComponent(
@@ -1815,12 +2105,12 @@
               }
             } catch (saveErr) {
               console.error("Error saving user data:", saveErr);
-              alert("Failed to save user data to server!");
+              showToast("Failed to save user data to the server.", "error");
             }
           } catch (error) {
             spinner.style.display = "none";
             console.error("Error:", error);
-            alert(`An error occurred: ${error.message}`);
+            showToast(`An error occurred: ${error.message}`, "error", 5000);
           }
         });
     </script>

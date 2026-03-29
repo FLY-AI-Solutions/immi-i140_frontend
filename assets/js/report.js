@@ -423,6 +423,31 @@ async function emailReportLink() {
   }
 }
 
+function openPetitionTemplate() {
+  if (!activeSummary) {
+    showToast("The report summary is still loading. Please try again in a moment.", "info", 4500);
+    return;
+  }
+
+  const seedPayload = {
+    referenceId: activeReferenceId || "",
+    customerEmail: activeCustomerEmail || "",
+    generatedAt: new Date().toISOString(),
+    reportSummary: activeSummary,
+  };
+
+  sessionStorage.setItem(
+    "petitionTemplateSeed",
+    JSON.stringify(seedPayload)
+  );
+
+  const nextUrl = new URL("../petition/petition_template_form.html", window.location.href);
+  if (activeReferenceId) {
+    nextUrl.searchParams.set("rB", activeReferenceId);
+  }
+  window.location.href = nextUrl.toString();
+}
+
 async function initialize() {
   try {
     const { apiBaseUrl, checkoutUrl } = window.ImmiAppConfig;
@@ -522,6 +547,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const printButton = document
     .querySelector(".bi-printer")
     ?.closest("button");
+  const petitionButton = document.getElementById("openPetitionTemplateBtn");
   printButton?.addEventListener("click", printReport);
+  petitionButton?.addEventListener("click", openPetitionTemplate);
   initialize();
 });

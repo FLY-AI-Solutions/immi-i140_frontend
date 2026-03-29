@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>I-140 Draft Petition Template</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    />
+    <link rel="stylesheet" href="../../assets/css/base.css" />
+    <link rel="stylesheet" href="../../assets/css/theme.css" />
+    <script src="../../assets/js/app-config.js" defer></script>
+    <script src="../../assets/js/petition-template.js" defer></script>
+    <style>
+      :root {
+        --petition-ink: #202226;
+        --petition-warm: #b9b0a2;
+        --petition-paper: #fffdf9;
+        --petition-panel: #ffffff;
+        --petition-line: #e4ddd2;
+      }
+      body {
+        background:
+          radial-gradient(circle at top left, rgba(185, 176, 162, 0.18), transparent 32%),
+          linear-gradient(180deg, #f6f4ef 0%, #f3f6f9 100%);
+        color: var(--petition-ink);
+      }
+      .petition-shell {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 2rem 1rem 4rem;
+      }
+      .petition-hero {
+        background: linear-gradient(135deg, rgba(32, 34, 38, 0.97), rgba(73, 64, 54, 0.93));
+        color: #fff;
+        border-radius: 28px;
+        padding: 2rem;
+        box-shadow: 0 24px 60px rgba(31, 34, 38, 0.22);
+      }
+      .petition-hero h1 {
+        margin: 0;
+        font-size: clamp(2rem, 3vw, 3.2rem);
+      }
+      .petition-hero p {
+        margin: 0.85rem 0 0;
+        max-width: 72ch;
+        color: rgba(255, 255, 255, 0.82);
+      }
+      .petition-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.9fr);
+        gap: 1.25rem;
+        margin-top: 1.25rem;
+      }
+      .petition-card {
+        background: var(--petition-panel);
+        border: 1px solid var(--petition-line);
+        border-radius: 24px;
+        padding: 1.25rem;
+        box-shadow: 0 14px 40px rgba(15, 23, 42, 0.06);
+      }
+      .petition-card h2 {
+        font-size: 1.1rem;
+        margin-bottom: 0.9rem;
+      }
+      .petition-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1rem;
+      }
+      .petition-toolbar .btn {
+        border-radius: 999px;
+        font-weight: 600;
+      }
+      .petition-stage {
+        margin-top: 1.1rem;
+        border: 1px solid var(--petition-line);
+        border-radius: 20px;
+        background: var(--petition-paper);
+        overflow: hidden;
+      }
+      .petition-stage-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: flex-start;
+        padding: 1rem 1.1rem;
+        border-bottom: 1px solid var(--petition-line);
+        background: linear-gradient(180deg, rgba(185, 176, 162, 0.18), rgba(255, 255, 255, 0));
+      }
+      .petition-stage-head p {
+        margin: 0.35rem 0 0;
+        color: #5f605f;
+      }
+      .petition-stage-body {
+        padding: 1rem 1.1rem 1.15rem;
+      }
+      .petition-textarea {
+        width: 100%;
+        min-height: 260px;
+        border: 1px solid #d7d2ca;
+        border-radius: 18px;
+        padding: 1rem;
+        background: #fff;
+        font-family: "Times New Roman", Times, serif;
+        line-height: 1.7;
+        resize: vertical;
+      }
+      .petition-textarea.section-compact {
+        min-height: 220px;
+      }
+      .petition-status {
+        min-height: 1.5rem;
+        margin-top: 0.75rem;
+        color: #5c677d;
+        font-weight: 500;
+      }
+      .report-insights {
+        display: grid;
+        gap: 0.8rem;
+      }
+      .insight-pill {
+        border: 1px solid var(--petition-line);
+        border-radius: 16px;
+        padding: 0.85rem 1rem;
+        background: rgba(255, 255, 255, 0.9);
+      }
+      .evidence-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+      }
+      .evidence-list {
+        display: grid;
+        gap: 0.9rem;
+      }
+      .evidence-item {
+        border: 1px solid var(--petition-line);
+        border-radius: 18px;
+        background: #fff;
+        padding: 1rem;
+      }
+      .evidence-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.85rem;
+      }
+      .evidence-item textarea,
+      .evidence-item input,
+      .evidence-item select {
+        width: 100%;
+        border: 1px solid #d7d2ca;
+        border-radius: 14px;
+        padding: 0.65rem 0.8rem;
+        background: #fffefb;
+      }
+      .evidence-item textarea {
+        min-height: 110px;
+        resize: vertical;
+      }
+      .evidence-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 0.8rem;
+      }
+      .attachment-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        border-radius: 999px;
+        padding: 0.45rem 0.7rem;
+        background: #f4f1ea;
+        color: #5c564c;
+        font-size: 0.92rem;
+      }
+      .side-list {
+        display: grid;
+        gap: 0.9rem;
+      }
+      .side-note {
+        border-left: 4px solid var(--petition-warm);
+        padding-left: 0.85rem;
+      }
+      .print-sheet {
+        background: #fff;
+        border: 1px dashed #cabfae;
+        border-radius: 20px;
+        padding: 1rem;
+      }
+      .hidden {
+        display: none !important;
+      }
+      @media (max-width: 1100px) {
+        .petition-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 768px) {
+        .evidence-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media print {
+        body {
+          background: #fff;
+        }
+        .petition-hero,
+        .petition-toolbar,
+        .evidence-controls,
+        .sidebar-only,
+        .btn,
+        .petition-status {
+          display: none !important;
+        }
+        .petition-layout {
+          display: block;
+        }
+        .petition-card,
+        .petition-stage,
+        .print-sheet {
+          box-shadow: none;
+          border: none;
+        }
+        .petition-shell {
+          padding: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="petition-shell">
+      <section class="petition-hero">
+        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+          <div>
+            <div class="text-uppercase small fw-semibold opacity-75">Draft Framework</div>
+            <h1>Evidence-Based I-140 Petition Template</h1>
+            <p>
+              This prototype keeps the original report flow untouched. It seeds a staged
+              petition workspace from the NIW report, lets the user add and edit exhibits,
+              and prepares a print-friendly structure for future PDF generation.
+            </p>
+          </div>
+          <div class="text-lg-end">
+            <div class="small opacity-75">Reference ID</div>
+            <div id="referenceBadge" class="fs-4 fw-bold">Draft Mode</div>
+            <div id="seedBadge" class="small opacity-75 mt-2">Using fallback sample report</div>
+          </div>
+        </div>
+        <div class="petition-toolbar">
+          <button id="generateSection3Btn" class="btn btn-light" type="button">
+            Generate Section-3 from Report
+          </button>
+          <button id="validateEvidenceBtn" class="btn btn-outline-light" type="button">
+            Validate Attached Evidence
+          </button>
+          <button id="generateSection1Btn" class="btn btn-outline-light" type="button">
+            Generate Section-1
+          </button>
+          <button id="generateSection2Btn" class="btn btn-outline-light" type="button">
+            Expand to Section-2
+          </button>
+          <button id="coherencyCheckBtn" class="btn btn-outline-light" type="button">
+            Coherency Check & Rephrase
+          </button>
+          <button id="printPetitionBtn" class="btn btn-warning" type="button">
+            Print Draft Packet
+          </button>
+        </div>
+      </section>
+
+      <section class="petition-layout">
+        <div class="d-grid gap-3">
+          <article class="petition-card">
+            <h2>Seeded Report Insights</h2>
+            <div id="reportInsights" class="report-insights"></div>
+          </article>
+
+          <article class="petition-card">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+              <h2 class="mb-0">Exhibits Workspace</h2>
+              <div class="evidence-controls">
+                <button id="addEvidenceBtn" class="btn btn-outline-dark btn-sm" type="button">
+                  <i class="bi bi-plus-circle"></i> Add Evidence Point
+                </button>
+                <button id="addCustomExhibitBtn" class="btn btn-outline-secondary btn-sm" type="button">
+                  <i class="bi bi-paperclip"></i> Add Custom Exhibit
+                </button>
+              </div>
+            </div>
+            <div id="evidenceList" class="evidence-list"></div>
+            <div id="evidenceStatus" class="petition-status"></div>
+          </article>
+
+          <article class="petition-stage">
+            <div class="petition-stage-head">
+              <div>
+                <strong>Section-3</strong>
+                <p>Index of exhibits generated first from the report and then refined by the user.</p>
+              </div>
+              <span class="badge text-bg-dark">Editable</span>
+            </div>
+            <div class="petition-stage-body">
+              <textarea id="section3Text" class="petition-textarea section-compact"></textarea>
+            </div>
+          </article>
+
+          <article class="petition-stage">
+            <div class="petition-stage-head">
+              <div>
+                <strong>Section-1</strong>
+                <p>Opening support brief, self-filing voice, keyed to the finalized evidence list.</p>
+              </div>
+              <span class="badge text-bg-dark">Editable</span>
+            </div>
+            <div class="petition-stage-body">
+              <textarea id="section1Text" class="petition-textarea"></textarea>
+            </div>
+          </article>
+
+          <article class="petition-stage">
+            <div class="petition-stage-head">
+              <div>
+                <strong>Section-2</strong>
+                <p>Expanded legal and evidence argument blocks for drafting the petition body.</p>
+              </div>
+              <span class="badge text-bg-dark">Editable</span>
+            </div>
+            <div class="petition-stage-body">
+              <textarea id="section2Text" class="petition-textarea"></textarea>
+            </div>
+          </article>
+
+          <article class="petition-card print-sheet">
+            <h2>Packet Notes</h2>
+            <textarea
+              id="packetNotes"
+              class="petition-textarea section-compact"
+              placeholder="Add filing notes, personal reminders, section instructions, or anything else the user wants to include before the final PDF pass."
+            ></textarea>
+          </article>
+        </div>
+
+        <aside class="d-grid gap-3 sidebar-only">
+          <article class="petition-card">
+            <h2>AI Opportunity Map</h2>
+            <div class="side-list">
+              <div class="side-note">
+                <strong>Section-3 generation</strong>
+                <div>Use AI to turn report findings into exhibit categories, evidence requests, and draft exhibit labels.</div>
+              </div>
+              <div class="side-note">
+                <strong>Evidence validation</strong>
+                <div>AI can classify uploaded files as acceptable, weak, duplicative, or missing context.</div>
+              </div>
+              <div class="side-note">
+                <strong>Section-1 drafting</strong>
+                <div>AI can convert the finalized evidence stack into a first-person self-petition introduction.</div>
+              </div>
+              <div class="side-note">
+                <strong>Section-2 elaboration</strong>
+                <div>AI can build prong-by-prong argument blocks with exhibit references and caveats.</div>
+              </div>
+              <div class="side-note">
+                <strong>Coherency pass</strong>
+                <div>AI can spot contradictions, unsupported statements, repeated language, and citation drift.</div>
+              </div>
+              <div class="side-note">
+                <strong>Final PDF assembly</strong>
+                <div>AI can help normalize headings, exhibit map wording, and document ordering before DOCX/PDF export.</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="petition-card">
+            <h2>Current Prototype Scope</h2>
+            <ul class="mb-0">
+              <li>Section generators are rule-based placeholders for now.</li>
+              <li>Evidence validation is a dummy action with review prompts.</li>
+              <li>Users can manually edit every section and add unlimited evidence rows.</li>
+              <li>PDF/PNG/JPG file slots are present for future validation and export logic.</li>
+              <li>The page can run from report-seeded data or fallback sample data.</li>
+            </ul>
+          </article>
+        </aside>
+      </section>
+    </main>
+  </body>
+</html>

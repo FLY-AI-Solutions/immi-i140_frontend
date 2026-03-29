@@ -36,6 +36,11 @@
           display: none !important;
         }
       }
+      .petition-launch-btn {
+        border-radius: 999px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
     </style>
   </head>
   <!-- Google tag (gtag.js) -->
@@ -74,7 +79,14 @@
             Best Wishes! Confirmation email will be sent to
             <strong id="customer-email">your email</strong>.
           </p>
-          <div class="m-0 p-0">
+          <div class="m-0 p-0 d-flex align-items-center gap-2">
+            <button
+              id="openPetitionTemplateBtn"
+              type="button"
+              class="btn btn-outline-dark petition-launch-btn"
+            >
+              Generate Evidence Based I-140 Draft Petition
+            </button>
             <button class="m-0 p-0 btn" class="btn btn-outline-primary">
               <i
                 class="bi bi-printer rounded-2"

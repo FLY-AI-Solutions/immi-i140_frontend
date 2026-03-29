@@ -175,6 +175,30 @@
         background-color: #333;
         color: white;
       }
+      .btn-save,
+      .btn-load {
+        border: 1px solid var(--primary-taupe);
+        background: linear-gradient(135deg, #f4efe8, #e2d6c7);
+        color: var(--dark-charcoal);
+        padding: 0.5rem 1.5rem;
+        font-weight: 600;
+        box-shadow: 0 8px 22px rgba(185, 176, 162, 0.22);
+      }
+      .btn-save:hover,
+      .btn-load:hover {
+        background: linear-gradient(135deg, #eadfd2, #d6c6b4);
+        color: var(--dark-charcoal);
+      }
+      .portfolio-actions {
+        gap: 0.75rem;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .load-status {
+        min-height: 1.5rem;
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+      }
       .offer-letter,
       .experience-dates,
       .education-date {
@@ -654,11 +678,24 @@
           </div>
         </section>
 
-        <div class="d-flex justify-content-end mb-5">
+        <div class="d-flex justify-content-end portfolio-actions mb-5">
+          <div id="loadStatus" class="load-status me-auto" aria-live="polite"></div>
+          <button type="button" class="btn btn-load" id="loadPortfolioBtn">
+            Load .flyai
+          </button>
+          <button type="button" class="btn btn-save" id="savePortfolioBtn">
+            Save
+          </button>
           <button type="submit" class="btn btn-submit">Submit</button>
         </div>
       </div>
     </form>
+    <input
+      id="flyaiFileInput"
+      type="file"
+      accept=".flyai"
+      style="display: none"
+    />
 
     <div
       class="modal fade"
@@ -735,6 +772,12 @@
       const modal = new bootstrap.Modal(modalEl);
       const modalTitle = document.getElementById("connectModalLabel");
       const modalBody = document.getElementById("modal-body");
+      const flyaiFileInput = document.getElementById("flyaiFileInput");
+
+      const getForm = () => document.querySelector("form");
+      const getLoadStatus = () => document.getElementById("loadStatus");
+      const getSaveButton = () => document.getElementById("savePortfolioBtn");
+      const getLoadButton = () => document.getElementById("loadPortfolioBtn");
 
       // --- Helper Functions ---
       function generateYearOptions(
@@ -885,9 +928,20 @@
           btn.onclick = () => btn.nextElementSibling.click();
         });
         element.querySelectorAll(".offer-file").forEach((inp) => {
-          inp.onchange = () => {
+          inp.onchange = async () => {
+            const item = inp.closest(".item");
             const fileNameSpan = inp.parentElement.querySelector(".file-name");
             fileNameSpan.innerText = inp.files[0] ? inp.files[0].name : "None";
+            if (!item) return;
+            if (inp.files[0]) {
+              item.dataset.savedFileName = inp.files[0].name;
+              item.dataset.savedFileDataUrl = await readFileAsDataUrl(
+                inp.files[0]
+              );
+            } else {
+              delete item.dataset.savedFileName;
+              delete item.dataset.savedFileDataUrl;
+            }
           };
         });
       }
@@ -1058,8 +1112,205 @@
         addItem("memberships-list", content);
       }
 
+      function readFileAsDataUrl(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () =>
+            reject(new Error("Unable to read the selected file."));
+          reader.readAsDataURL(file);
+        });
+      }
+
+      async function collectAttachmentState() {
+        const items = Array.from(document.querySelectorAll(".offer-file")).map(
+          async (input) => {
+            const item = input.closest(".item");
+            const list = item?.parentElement;
+            if (!item || !list || !list.id) {
+              return null;
+            }
+
+            let fileName = item.dataset.savedFileName || "";
+            let dataUrl = item.dataset.savedFileDataUrl || "";
+
+            if (input.files[0]) {
+              fileName = input.files[0].name;
+              dataUrl = await readFileAsDataUrl(input.files[0]);
+            }
+
+            if (!fileName || fileName === "None") {
+              return null;
+            }
+
+            return {
+              listId: list.id,
+              index: Array.from(list.children).indexOf(item),
+              fileName,
+              dataUrl,
+            };
+          }
+        );
+
+        return (await Promise.all(items)).filter(Boolean);
+      }
+
+      function restoreAttachmentState(attachments = []) {
+        attachments.forEach((attachment) => {
+          const list = document.getElementById(attachment.listId);
+          const item = list?.children?.[attachment.index];
+          const fileNameSpan = item?.querySelector(".file-name");
+          if (!item || !fileNameSpan) {
+            return;
+          }
+
+          fileNameSpan.innerText = attachment.fileName;
+          item.dataset.savedFileName = attachment.fileName;
+          item.dataset.savedFileDataUrl = attachment.dataUrl || "";
+        });
+      }
+
+      function setLoadStatus(message, isError = false) {
+        const status = getLoadStatus();
+        if (!status) return;
+        status.textContent = message;
+        status.style.color = isError ? "#b42318" : "var(--text-secondary)";
+      }
+
+      function setButtonBusy(button, busy, idleLabel, busyLabel) {
+        if (!button) return;
+        button.disabled = busy;
+        button.textContent = busy ? busyLabel : idleLabel;
+      }
+
+      function base64ToBlob(base64, mimeType = "application/octet-stream") {
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        return new Blob([bytes], { type: mimeType });
+      }
+
+      async function savePortfolioToFlyai() {
+        const saveButton = getSaveButton();
+        setButtonBusy(saveButton, true, "Save", "Saving...");
+        setLoadStatus("Preparing your .flyai file...");
+
+        try {
+          const form = getForm();
+          const attachments = await collectAttachmentState();
+          const email =
+            document.getElementById("email")?.innerText.trim() || "portfolio";
+          const response = await fetch(
+            `${window.ImmiAppConfig.apiBaseUrl}/portfolio/export`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                filename: email.replace(/[^a-z0-9._-]+/gi, "_"),
+                payload: {
+                  version: 1,
+                  form_html: form.innerHTML,
+                  attachments,
+                },
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(
+              errorData.detail || "Failed to create the .flyai file."
+            );
+          }
+
+          const result = await response.json();
+          const blob = base64ToBlob(
+            result.file_base64,
+            result.mime_type || "application/octet-stream"
+          );
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = result.filename || "portfolio.flyai";
+          document.body.appendChild(link);
+          link.click();
+          URL.revokeObjectURL(link.href);
+          link.remove();
+          setLoadStatus("Saved successfully. Your encrypted .flyai file is ready.");
+        } catch (error) {
+          console.error("Save error:", error);
+          setLoadStatus(error.message, true);
+          alert(error.message);
+        } finally {
+          setButtonBusy(saveButton, false, "Save", "Saving...");
+        }
+      }
+
+      async function loadPortfolioFromFlyai(file) {
+        if (!file || !file.name.toLowerCase().endsWith(".flyai")) {
+          setLoadStatus("Please choose a valid .flyai file.", true);
+          return;
+        }
+
+        const loadButton = getLoadButton();
+        setButtonBusy(loadButton, true, "Load .flyai", "Loading...");
+        setLoadStatus(`Opening ${file.name}...`);
+
+        try {
+          const fileDataUrl = await readFileAsDataUrl(file);
+          const response = await fetch(
+            `${window.ImmiAppConfig.apiBaseUrl}/portfolio/import`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                file_base64: String(fileDataUrl).split(",")[1],
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(
+              errorData.detail || "Failed to load the .flyai file."
+            );
+          }
+
+          const result = await response.json();
+          const payload = result.payload || {};
+          const form = getForm();
+          form.innerHTML = payload.form_html || form.innerHTML;
+          populateYearSelects();
+          initializeButtons();
+          attachConnectListeners(document);
+          attachUploadListeners(document);
+          restoreAttachmentState(payload.attachments || []);
+          setLoadStatus(`${file.name} loaded successfully.`);
+        } catch (error) {
+          console.error("Load error:", error);
+          setLoadStatus(error.message, true);
+          alert(error.message);
+        } finally {
+          flyaiFileInput.value = "";
+          setButtonBusy(loadButton, false, "Load .flyai", "Loading...");
+        }
+      }
+
       // --- Global Event Listeners ---
       document.addEventListener("click", function (e) {
+        if (e.target.closest("#savePortfolioBtn")) {
+          savePortfolioToFlyai();
+          return;
+        }
+        if (e.target.closest("#loadPortfolioBtn")) {
+          flyaiFileInput.click();
+          return;
+        }
         // Handle Edit Clicks
         if (e.target.matches(".edit-btn")) {
           const item = e.target.closest(".item");
@@ -1090,6 +1341,9 @@
         initializeButtons();
         attachConnectListeners(document);
         attachUploadListeners(document);
+        flyaiFileInput.addEventListener("change", () =>
+          loadPortfolioFromFlyai(flyaiFileInput.files[0])
+        );
       });
 
       //  Form Submission

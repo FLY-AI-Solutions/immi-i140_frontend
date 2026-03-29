@@ -13,7 +13,7 @@
     checkoutUrl: isLocalHost
       ? "../payment/checkout.html"
       : "https://fly-ai-solutions.github.io/immi-i140_frontend/pages/payment/checkout.html",
-    supportEmail: "support@immigenius.us",
+    supportEmail: "contact@flyai.online",
     stripePublishableKey:
       "pk_live_51QgJ1jB9nS1ga46ZQ1V0cKQgHALtlLnRkNcNkRQgPYZm0HqkwWZvih3taVzL6Vr1Ewh3PxC48nEo7GMgz4PDA93Z00Gcy8tYWD",
   };

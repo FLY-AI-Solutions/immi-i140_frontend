@@ -1192,6 +1192,29 @@
         return new Blob([bytes], { type: mimeType });
       }
 
+      function normalizePortfolioControls(scope = document) {
+        const saveButton = scope.querySelector("#savePortfolioBtn");
+        const loadButton = scope.querySelector("#loadPortfolioBtn");
+        const submitButton = scope.querySelector('button[type="submit"]');
+        const status = scope.querySelector("#loadStatus");
+
+        if (saveButton) {
+          saveButton.disabled = false;
+          saveButton.textContent = "Save";
+        }
+        if (loadButton) {
+          loadButton.disabled = false;
+          loadButton.textContent = "Load .flyai";
+        }
+        if (submitButton) {
+          submitButton.disabled = false;
+        }
+        if (status) {
+          status.textContent = "";
+          status.style.color = "var(--text-secondary)";
+        }
+      }
+
       async function savePortfolioToFlyai() {
         const saveButton = getSaveButton();
         setButtonBusy(saveButton, true, "Save", "Saving...");
@@ -1200,6 +1223,8 @@
         try {
           const form = getForm();
           const attachments = await collectAttachmentState();
+          const formClone = form.cloneNode(true);
+          normalizePortfolioControls(formClone);
           const email =
             document.getElementById("email")?.innerText.trim() || "portfolio";
           const response = await fetch(
@@ -1213,7 +1238,7 @@
                 filename: email.replace(/[^a-z0-9._-]+/gi, "_"),
                 payload: {
                   version: 1,
-                  form_html: form.innerHTML,
+                  form_html: formClone.innerHTML,
                   attachments,
                 },
               }),
@@ -1285,6 +1310,7 @@
           const payload = result.payload || {};
           const form = getForm();
           form.innerHTML = payload.form_html || form.innerHTML;
+          normalizePortfolioControls(form);
           populateYearSelects();
           initializeButtons();
           attachConnectListeners(document);

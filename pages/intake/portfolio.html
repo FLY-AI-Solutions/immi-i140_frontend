@@ -1155,6 +1155,63 @@
         return (await Promise.all(items)).filter(Boolean);
       }
 
+      function collectFieldState() {
+        return Array.from(
+          document.querySelectorAll(
+            "select, input[type='date'], input[type='text'], input[type='email'], input[type='number'], textarea"
+          )
+        )
+          .filter((field) => field.id !== "flyaiFileInput")
+          .map((field, index) => ({
+            tagName: field.tagName,
+            type: field.type || "",
+            id: field.id || "",
+            name: field.name || "",
+            index,
+            value: field.value || "",
+          }));
+      }
+
+      function restoreFieldState(fields = []) {
+        const candidates = Array.from(
+          document.querySelectorAll(
+            "select, input[type='date'], input[type='text'], input[type='email'], input[type='number'], textarea"
+          )
+        ).filter((field) => field.id !== "flyaiFileInput");
+
+        fields.forEach((savedField) => {
+          let target = null;
+
+          if (savedField.id) {
+            target = document.getElementById(savedField.id);
+          }
+
+          if (!target && savedField.name) {
+            target = candidates.find(
+              (field) =>
+                field.name === savedField.name &&
+                field.tagName === savedField.tagName &&
+                (field.type || "") === savedField.type
+            );
+          }
+
+          if (!target && typeof savedField.index === "number") {
+            const indexed = candidates[savedField.index];
+            if (
+              indexed &&
+              indexed.tagName === savedField.tagName &&
+              (indexed.type || "") === savedField.type
+            ) {
+              target = indexed;
+            }
+          }
+
+          if (target) {
+            target.value = savedField.value || "";
+          }
+        });
+      }
+
       function restoreAttachmentState(attachments = []) {
         attachments.forEach((attachment) => {
           const list = document.getElementById(attachment.listId);
@@ -1239,6 +1296,7 @@
                 payload: {
                   version: 1,
                   form_html: formClone.innerHTML,
+                  fields: collectFieldState(),
                   attachments,
                 },
               }),
@@ -1312,6 +1370,7 @@
           form.innerHTML = payload.form_html || form.innerHTML;
           normalizePortfolioControls(form);
           populateYearSelects();
+          restoreFieldState(payload.fields || []);
           initializeButtons();
           attachConnectListeners(document);
           attachUploadListeners(document);

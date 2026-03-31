@@ -67,6 +67,12 @@
         border-radius: 24px;
         padding: 1.25rem;
         box-shadow: 0 14px 40px rgba(15, 23, 42, 0.06);
+        position: relative;
+        z-index: 0;
+      }
+      .petition-card:hover,
+      .petition-card:focus-within {
+        background: var(--petition-panel);
       }
       .petition-card h2 {
         font-size: 1.1rem;
@@ -158,15 +164,34 @@
       }
       .stage-toggle {
         border: none;
-        border-radius: 999px;
+        border-radius: 50%;
         background: rgba(32, 34, 38, 0.08);
         color: var(--petition-ink);
         font-weight: 600;
-        padding: 0.55rem 0.95rem;
+        width: 38px;
+        height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
       .stage-toggle:hover,
       .stage-toggle:focus {
         background: rgba(32, 34, 38, 0.14);
+      }
+      .info-toggle {
+        border: none;
+        background: transparent;
+        color: var(--petition-ink);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .info-toggle:hover,
+      .info-toggle:focus {
+        background: rgba(32, 34, 38, 0.08);
       }
       .petition-stage-body {
         padding: 1rem 1.1rem 1.15rem;
@@ -203,6 +228,26 @@
         border-radius: 16px;
         padding: 0.85rem 1rem;
         background: rgba(255, 255, 255, 0.9);
+      }
+      .readonly-chip {
+        border: 1px solid #d7d2ca;
+        border-radius: 14px;
+        padding: 0.75rem 0.8rem;
+        background: #f5f2eb;
+        min-height: 50px;
+      }
+      .readonly-chip strong {
+        display: block;
+        font-size: 0.8rem;
+        color: #70675a;
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+      .evidence-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
       }
       .evidence-controls {
         display: flex;
@@ -363,8 +408,15 @@
       <section class="petition-layout">
         <div class="d-grid gap-3">
           <article class="petition-card">
-            <h2>Seeded Report Insights</h2>
-            <div id="reportInsights" class="report-insights"></div>
+            <div class="d-flex justify-content-between align-items-center" data-collapse-target="reportInsightsWrap" style="cursor: pointer;">
+              <h2 class="mb-0">Seeded Report Insights</h2>
+              <button class="info-toggle" type="button">
+                <i class="bi bi-chevron-up"></i>
+              </button>
+            </div>
+            <div id="reportInsightsWrap" class="mt-3">
+              <div id="reportInsights" class="report-insights"></div>
+            </div>
           </article>
 
           <article class="petition-card">
@@ -386,13 +438,13 @@
           <article class="petition-stage">
             <div class="petition-stage-head" id="section3Head">
               <div>
-                <strong>Section-3</strong>
+                <strong>Section-A: INDEX OF EXHIBITS</strong>
                 <p>Index of exhibits generated first from the report and then refined by the user.</p>
               </div>
               <div class="d-flex align-items-center gap-2">
                 <span class="badge text-bg-dark">Editable</span>
                 <button class="stage-toggle" type="button" data-collapse-target="section3Body">
-                  Collapse
+                  <i class="bi bi-chevron-up"></i>
                 </button>
               </div>
             </div>
@@ -404,13 +456,13 @@
           <article class="petition-stage">
             <div class="petition-stage-head" id="section1Head">
               <div>
-                <strong>Section-1</strong>
+                <strong>Section-B: PETITION SUMMARY PAGE</strong>
                 <p>Opening support brief, self-filing voice, keyed to the finalized evidence list.</p>
               </div>
               <div class="d-flex align-items-center gap-2">
                 <span class="badge text-bg-dark">Editable</span>
                 <button class="stage-toggle" type="button" data-collapse-target="section1Body">
-                  Collapse
+                  <i class="bi bi-chevron-up"></i>
                 </button>
               </div>
             </div>
@@ -422,13 +474,13 @@
           <article class="petition-stage">
             <div class="petition-stage-head" id="section2Head">
               <div>
-                <strong>Section-2</strong>
+                <strong>Section-C: PETITION BODY</strong>
                 <p>Expanded legal and evidence argument blocks for drafting the petition body.</p>
               </div>
               <div class="d-flex align-items-center gap-2">
                 <span class="badge text-bg-dark">Editable</span>
                 <button class="stage-toggle" type="button" data-collapse-target="section2Body">
-                  Collapse
+                  <i class="bi bi-chevron-up"></i>
                 </button>
               </div>
             </div>

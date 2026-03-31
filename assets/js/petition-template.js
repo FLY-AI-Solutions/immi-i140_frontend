@@ -416,18 +416,54 @@ function buildSection2Text() {
   return sections.join("\n");
 }
 
+function isEvidenceAvailable(item) {
+  const hasAttachment = Boolean(item?.attachmentProvided);
+  const title = String(item?.title || "").trim();
+  const purpose = String(item?.purpose || "").trim();
+  const notes = String(item?.notes || "").trim();
+  const attachmentName = String(item?.attachmentName || "").trim().toLowerCase();
+  const hasRealAttachmentName = attachmentName && attachmentName !== "no file selected";
+  return hasAttachment || (Boolean(title) && Boolean(purpose || notes) && Boolean(hasRealAttachmentName));
+}
+
 function buildCompiledDraftText() {
   const referenceLine = petitionDataId || petitionSeed.referenceId || "Draft";
-  const section3 = document.getElementById("section3Text")?.value?.trim() || buildSection3Text();
+  const availableEvidence = evidenceState.filter((item) => isEvidenceAvailable(item));
+  const droppedEvidence = evidenceState.filter((item) => !isEvidenceAvailable(item));
+  const section3 =
+    availableEvidence.length > 0
+      ? [
+          "SECTION 3",
+          "INDEX OF EXHIBITS",
+          ...availableEvidence.map(
+            (item) =>
+              `${item.exhibitLabel}\t${item.title || "Untitled exhibit"}${
+                item.purpose ? ` - ${item.purpose}` : ""
+              }`
+          ),
+        ].join("\n")
+      : "SECTION 3\nINDEX OF EXHIBITS\n[[YELLOW]] WARNING: The prong is not satisfied, please work on your evidences.";
   const section1 = document.getElementById("section1Text")?.value?.trim() || buildSection1Text();
-  const section2 = document.getElementById("section2Text")?.value?.trim() || buildSection2Text();
+  const section2Base = document.getElementById("section2Text")?.value?.trim() || buildSection2Text();
   const notes = document.getElementById("packetNotes")?.value?.trim() || "";
+  const warningBlock =
+    availableEvidence.length < 3
+      ? "\n[[YELLOW]] WARNING: The prong is not satisfied, please work on your evidences."
+      : "";
+  const droppedBlock = droppedEvidence.length
+    ? [
+        "",
+        "Dropped unsupported exhibits during compile:",
+        ...droppedEvidence.map((item) => `- ${item.exhibitLabel}: ${item.title || "Untitled exhibit"}`),
+      ].join("\n")
+    : "";
+  const section2 = `SECTION 2\n${section2Base}${warningBlock}${droppedBlock}`;
 
   return [
     "EVIDENCE-BASED I-140 DRAFT PETITION",
     `Reference ID: ${referenceLine}`,
     "",
-    section1,
+    `SECTION 1\n${section1}`,
     "",
     section2,
     "",

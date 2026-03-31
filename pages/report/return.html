@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Confirmation page for Immigenius I-485 preparation payment"
+      content="Confirmation page for the NIW Eligibility Report"
     />
-    <title>Immigenius Payment Confirmation</title>
+    <title>NIW Eligibility Report</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -21,89 +21,256 @@
     <script src="../../assets/js/app-config.js" defer></script>
     <script src="../../assets/js/report.js" defer></script>
     <style>
-      body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f8f9fa;
+      :root {
+        --report-bg: #f6f1e9;
+        --report-surface: rgba(255, 255, 255, 0.94);
+        --report-border: rgba(185, 176, 162, 0.38);
+        --report-text: #1c1c1c;
+        --report-muted: #61584d;
+        --report-accent: #8f806e;
+        --report-accent-dark: #645748;
+        --report-shadow: 0 18px 40px rgba(28, 28, 28, 0.08);
       }
-      iframe {
-        width: 100%;
-        height: 600px;
-        border: 1px solid #ccc;
-        border-radius: 10px;
-      }
-      @media (max-width: 1024px) {
-        img[alt="Logo"] {
-          display: none !important;
-        }
-      }
-      .petition-launch-btn {
-        border-radius: 999px;
-        font-weight: 600;
-        white-space: nowrap;
-      }
-    </style>
-  </head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-R65K06V97N"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'G-R65K06V97N');
-</script>
-  <body>
-    <img
-      src="../../assets/images/logo.png"
-      alt="Logo"
-      style="
+      body {
+        font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(185, 176, 162, 0.16), transparent 30%),
+          linear-gradient(180deg, #fbfbfb 0%, var(--report-bg) 100%);
+        color: var(--report-text);
+        min-height: 100vh;
+      }
+
+      header,
+      main {
+        width: min(1180px, calc(100% - 2rem));
+        margin: 0 auto;
+      }
+
+      header {
+        padding-top: 2.5rem;
+      }
+
+      main {
+        padding: 2rem 0 3rem;
+      }
+
+      .brand-mark {
         position: absolute;
         top: 2rem;
         left: 2rem;
-        width: clamp(160px, 10vw, 120px);
+        width: clamp(96px, 10vw, 120px);
         height: auto;
         max-width: 25vw;
         opacity: 0.95;
         object-fit: contain;
-      "
-    />
+      }
+
+      .report-title {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 3.2rem);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        color: var(--report-text);
+      }
+
+      .report-shell {
+        border: 1px solid var(--report-border);
+        border-radius: 28px;
+        padding: 1.5rem;
+        background: var(--report-surface);
+        box-shadow: var(--report-shadow);
+        backdrop-filter: blur(12px);
+      }
+
+      .report-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .report-intro {
+        margin: 0;
+        max-width: 680px;
+        color: var(--report-muted);
+        line-height: 1.6;
+      }
+
+      .report-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        flex-shrink: 0;
+      }
+
+      .petition-launch-btn,
+      .report-print-btn {
+        border-radius: 999px;
+        font-weight: 700;
+        min-height: 48px;
+        transition:
+          transform 0.18s ease,
+          box-shadow 0.18s ease,
+          background-color 0.18s ease,
+          color 0.18s ease,
+          border-color 0.18s ease;
+      }
+
+      .petition-launch-btn {
+        border: 1px solid var(--report-accent-dark);
+        background: linear-gradient(135deg, #f8f4ed, #ece3d6);
+        color: var(--report-accent-dark);
+        white-space: normal;
+        box-shadow: 0 12px 24px rgba(100, 87, 72, 0.12);
+      }
+
+      .petition-launch-btn:hover,
+      .petition-launch-btn:focus {
+        background: linear-gradient(135deg, #f1e8db, #e3d4c1);
+        border-color: var(--report-accent-dark);
+        color: var(--report-accent-dark);
+        transform: translateY(-1px);
+      }
+
+      .report-print-btn {
+        border: 1px solid rgba(143, 128, 110, 0.25);
+        background: #ffffff;
+        color: var(--report-accent);
+        padding-inline: 1rem;
+      }
+
+      .report-print-btn:hover,
+      .report-print-btn:focus {
+        background: #f6f1e9;
+        border-color: rgba(143, 128, 110, 0.45);
+        color: var(--report-accent-dark);
+      }
+
+      iframe {
+        width: 100%;
+        height: 620px;
+        border: 1px solid var(--report-border);
+        border-radius: 22px;
+        background: #ffffff;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+      }
+
+      .report-help {
+        margin-top: 1rem;
+        margin-bottom: 0;
+        color: var(--report-muted);
+      }
+
+      @media (max-width: 1024px) {
+        .brand-mark {
+          display: none !important;
+        }
+      }
+
+      @media (max-width: 768px) {
+        header,
+        main {
+          width: min(100% - 1rem, 100%);
+        }
+
+        header {
+          padding-top: 1.5rem;
+        }
+
+        main {
+          padding: 1rem 0 2rem;
+        }
+
+        .report-shell {
+          padding: 1rem;
+          border-radius: 22px;
+        }
+
+        .report-topbar {
+          flex-direction: column;
+        }
+
+        .report-actions {
+          width: 100%;
+          justify-content: stretch;
+        }
+
+        .petition-launch-btn,
+        .report-print-btn {
+          width: 100%;
+        }
+
+        iframe {
+          height: 520px;
+          border-radius: 18px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .report-title {
+          font-size: 1.8rem;
+        }
+
+        iframe {
+          height: 460px;
+        }
+      }
+    </style>
+  </head>
+  <!-- Google tag (gtag.js) -->
+  <script
+    async
+    src="https://www.googletagmanager.com/gtag/js?id=G-R65K06V97N"
+  ></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
+
+    gtag("config", "G-R65K06V97N");
+  </script>
+  <body>
+    <img src="../../assets/images/logo.png" alt="Logo" class="brand-mark" />
     <header>
-      <h1 class="center">🤖 ImmI-GeniUS: Report</h1>
+      <h1 class="report-title">NIW Eligibility Report</h1>
     </header>
     <main>
-      <!-- <section id="loading" aria-live="polite"></section> -->
-      <section id="success" class="hidden" aria-live="polite">
-        <!-- <h2>Thank You for Your Payment!</h2> -->
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <p class="m-0 p-0">
+      <section id="success" class="hidden report-shell" aria-live="polite">
+        <div class="report-topbar">
+          <p class="report-intro">
             Best Wishes! Confirmation email will be sent to
             <strong id="customer-email">your email</strong>.
           </p>
-          <div class="m-0 p-0 d-flex align-items-center gap-2">
+          <div class="report-actions">
             <button
               id="openPetitionTemplateBtn"
               type="button"
-              class="btn btn-outline-dark petition-launch-btn"
+              class="btn petition-launch-btn"
             >
               Generate Evidence Based I-140 Draft Petition
             </button>
-            <button class="m-0 p-0 btn" class="btn btn-outline-primary">
-              <i
-                class="bi bi-printer rounded-2"
-                style="font-size: 1.5rem; color: cornflowerblue"
-              ></i>
+            <button
+              type="button"
+              class="btn report-print-btn"
+              aria-label="Print report"
+            >
+              <i class="bi bi-printer rounded-2" style="font-size: 1.2rem"></i>
             </button>
           </div>
         </div>
 
-        <!-- <h3>Summary Widget:</h3> -->
         <iframe id="widgetFrame" src="../widget/niw_case_summary.html"></iframe>
-        <p>
+        <p class="report-help">
           If you have any questions, please email
           <a href="mailto:contact@flyai.online">contact@flyai.online</a>.
         </p>
       </section>
-      <section id="error-message" class="hidden" aria-live="polite">
+      <section id="error-message" class="hidden report-shell" aria-live="polite">
         <h2>Oops, Something Went Wrong</h2>
         <p id="error-text">
           An error occurred. Please try again or contact support.

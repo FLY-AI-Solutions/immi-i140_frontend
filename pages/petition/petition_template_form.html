@@ -41,6 +41,16 @@
         border-radius: 28px;
         padding: 2rem;
         box-shadow: 0 24px 60px rgba(31, 34, 38, 0.22);
+        isolation: isolate;
+        position: relative;
+      }
+      .petition-hero:hover,
+      .petition-hero:focus-within {
+        background: linear-gradient(135deg, rgba(32, 34, 38, 0.97), rgba(73, 64, 54, 0.93)) !important;
+        color: #fff !important;
+      }
+      .petition-hero * {
+        color: inherit;
       }
       .petition-hero a,
       .petition-hero button {
@@ -162,6 +172,13 @@
         margin: 0.35rem 0 0;
         color: #5f605f;
       }
+      .stage-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+        justify-content: flex-end;
+      }
       .stage-toggle {
         border: none;
         border-radius: 50%;
@@ -212,6 +229,28 @@
       }
       .petition-textarea.section-compact {
         min-height: 220px;
+      }
+      .section-prompt {
+        width: 100%;
+        min-height: 120px;
+        border: 1px solid #d7d2ca;
+        border-radius: 18px;
+        padding: 0.9rem 1rem;
+        background: #fff;
+        resize: vertical;
+        margin-bottom: 0.85rem;
+      }
+      .save-badge {
+        border-radius: 999px;
+        padding: 0.4rem 0.7rem;
+        background: #edf4ef;
+        color: #1f6a39;
+        font-size: 0.86rem;
+        font-weight: 600;
+      }
+      .save-badge.pending {
+        background: #f3efe7;
+        color: #7c6040;
       }
       .petition-status {
         min-height: 1.5rem;
@@ -384,21 +423,6 @@
           </div>
         </div>
         <div class="petition-toolbar">
-          <button id="generateSection3Btn" class="btn petition-ai-btn" type="button">
-            Generate Section-3 from Report (3 AI-Tokens)
-          </button>
-          <button id="validateEvidenceBtn" class="btn petition-ai-btn" type="button">
-            Validate Attached Evidence (2 AI-Tokens)
-          </button>
-          <button id="generateSection1Btn" class="btn petition-ai-btn" type="button">
-            Generate Section-1 (5 AI-Tokens)
-          </button>
-          <button id="generateSection2Btn" class="btn petition-ai-btn" type="button">
-            Expand to Section-2 (7 AI-Tokens)
-          </button>
-          <button id="coherencyCheckBtn" class="btn petition-ai-btn" type="button">
-            Coherency Check & Rephrase (3 AI-Tokens)
-          </button>
           <button id="printPetitionBtn" class="btn petition-print-btn" type="button">
             Print Draft Packet
           </button>
@@ -441,8 +465,14 @@
                 <strong>Section-A: INDEX OF EXHIBITS</strong>
                 <p>Index of exhibits generated first from the report and then refined by the user.</p>
               </div>
-              <div class="d-flex align-items-center gap-2">
-                <span class="badge text-bg-dark">Editable</span>
+              <div class="stage-actions">
+                <span id="section3SavedBadge" class="save-badge pending">Not Saved</span>
+                <button id="generateSection3Btn" class="btn btn-outline-dark btn-sm" type="button">
+                  Generate (3 AI-Tokens)
+                </button>
+                <button id="saveSection3Btn" class="btn btn-dark btn-sm" type="button">
+                  Save
+                </button>
                 <button class="stage-toggle" type="button" data-collapse-target="section3Body">
                   <i class="bi bi-chevron-up"></i>
                 </button>
@@ -459,8 +489,14 @@
                 <strong>Section-B: PETITION SUMMARY PAGE</strong>
                 <p>Opening support brief, self-filing voice, keyed to the finalized evidence list.</p>
               </div>
-              <div class="d-flex align-items-center gap-2">
-                <span class="badge text-bg-dark">Editable</span>
+              <div class="stage-actions">
+                <span id="section1SavedBadge" class="save-badge pending">Not Saved</span>
+                <button id="generateSection1Btn" class="btn btn-outline-dark btn-sm" type="button">
+                  Generate (5 AI-Tokens)
+                </button>
+                <button id="saveSection1Btn" class="btn btn-dark btn-sm" type="button">
+                  Save
+                </button>
                 <button class="stage-toggle" type="button" data-collapse-target="section1Body">
                   <i class="bi bi-chevron-up"></i>
                 </button>
@@ -477,14 +513,28 @@
                 <strong>Section-C: PETITION BODY</strong>
                 <p>Expanded legal and evidence argument blocks for drafting the petition body.</p>
               </div>
-              <div class="d-flex align-items-center gap-2">
-                <span class="badge text-bg-dark">Editable</span>
+              <div class="stage-actions">
+                <span id="section2SavedBadge" class="save-badge pending">Not Saved</span>
+                <button id="generateSection2Btn" class="btn btn-outline-dark btn-sm" type="button">
+                  Generate (7 AI-Tokens)
+                </button>
+                <button id="coherencyCheckBtn" class="btn btn-outline-secondary btn-sm" type="button">
+                  Rephrase (3 AI-Tokens)
+                </button>
+                <button id="saveSection2Btn" class="btn btn-dark btn-sm" type="button">
+                  Save
+                </button>
                 <button class="stage-toggle" type="button" data-collapse-target="section2Body">
                   <i class="bi bi-chevron-up"></i>
                 </button>
               </div>
             </div>
             <div class="petition-stage-body" id="section2Body">
+              <textarea
+                id="section2Prompt"
+                class="section-prompt"
+                placeholder="Before generating or regenerating Section-C, describe the writing style or changes you want here. Example: make the body more formal, soften unsupported claims, focus more on national importance, or improve exhibit references."
+              ></textarea>
               <textarea id="section2Text" class="petition-textarea"></textarea>
             </div>
           </article>

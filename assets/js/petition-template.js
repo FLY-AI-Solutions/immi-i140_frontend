@@ -1,4 +1,7 @@
 const petitionSeedStorageKey = "petitionTemplateSeed";
+const stripePublishableKey = window.ImmiAppConfig?.stripePublishableKey || "";
+const stripeClient =
+  window.Stripe && stripePublishableKey ? window.Stripe(stripePublishableKey) : null;
 
 const fallbackSeed = {
   referenceId: "DEMO-140",
@@ -49,6 +52,10 @@ let tokenBalance = null;
 let backendAiReady = false;
 let aiBusy = false;
 let compiledDraftText = "";
+let tokenPackages = [];
+let selectedTokenPackageKey = "ai_tokens_30";
+let tokenCheckoutInstance = null;
+let pendingAiAction = null;
 const sectionSaveState = {
   section3: false,
   section1: false,
@@ -123,6 +130,11 @@ function refreshButtonLabels() {
   });
 }
 
+function getCheckoutErrorMessage(error) {
+  if (!error) return "Unable to start token checkout.";
+  return error.message || String(error.detail || error) || "Unable to start token checkout.";
+}
+
 function ensureToastStack() {
   return document.getElementById("toastStack");
 }
@@ -146,6 +158,10 @@ function showToast(message, type = "info", duration = 4000) {
   }, duration);
 }
 
+function setTokenPurchaseStatus(message) {
+  setStatus("tokenPurchaseStatus", message);
+}
+
 function setAiButtonsBusy(isBusy) {
   aiBusy = isBusy;
   [
@@ -160,6 +176,182 @@ function setAiButtonsBusy(isBusy) {
       button.disabled = isBusy;
     }
   });
+}
+
+function renderTokenPackages() {
+  const container = document.getElementById("tokenPackageGrid");
+  if (!container) return;
+
+  const packages = tokenPackages.length
+    ? tokenPackages
+    : [
+        { package_key: "ai_tokens_30", tokens: 30, display_name: "30 AI-Tokens", configured: true },
+        { package_key: "ai_tokens_90", tokens: 90, display_name: "90 AI-Tokens", configured: true },
+      ];
+
+  container.innerHTML = packages
+    .filter((item) => item.configured !== false)
+    .map(
+      (item) => `
+        <button
+          type="button"
+          class="token-package-card text-start ${item.package_key === selectedTokenPackageKey ? "is-selected" : ""}"
+          data-package-key="${escapeHtml(item.package_key)}"
+        >
+          <div class="d-flex justify-content-between align-items-start gap-3">
+            <div>
+              <div class="fw-bold">${escapeHtml(item.display_name || item.package_key)}</div>
+              <small>${escapeHtml(`${item.tokens} tokens added to the same user and reference ID`)}</small>
+            </div>
+            <span class="badge text-bg-dark">${escapeHtml(String(item.tokens || ""))}</span>
+          </div>
+        </button>
+      `
+    )
+    .join("");
+}
+
+function openTokenPurchaseModal(requiredTokens = 0, requestedAction = "") {
+  const modal = document.getElementById("tokenPurchaseModal");
+  const intro = document.getElementById("tokenModalIntro");
+  if (!modal) return;
+
+  if (intro) {
+    const current = tokenBalance == null ? 0 : tokenBalance;
+    intro.textContent = requestedAction
+      ? `The action "${requestedAction.replaceAll("_", " ")}" needs ${requiredTokens} AI-Tokens, but only ${current} are available. Buy more tokens to continue.`
+      : "This action needs more AI-Tokens than are currently available. Choose a package to continue.";
+  }
+
+  renderTokenPackages();
+  setTokenPurchaseStatus("");
+  modal.classList.remove("hidden");
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function closeTokenPurchaseModal() {
+  const modal = document.getElementById("tokenPurchaseModal");
+  if (!modal) return;
+  if (tokenCheckoutInstance) {
+    tokenCheckoutInstance.unmount();
+    tokenCheckoutInstance = null;
+  }
+  modal.classList.add("hidden");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+async function fetchTokenPackages() {
+  try {
+    const response = await fetch(`${getApiBaseUrl()}/petition/token-packages`);
+    if (!response.ok) {
+      throw new Error(`Failed to load token packages: ${response.status}`);
+    }
+    const result = await response.json();
+    tokenPackages = Array.isArray(result.packages) ? result.packages : [];
+    renderTokenPackages();
+  } catch (error) {
+    console.error("Token package fetch failed:", error);
+    tokenPackages = [];
+    renderTokenPackages();
+  }
+}
+
+async function startTokenCheckout() {
+  if (!stripeClient) {
+    setTokenPurchaseStatus("Stripe is not available on this page.");
+    return;
+  }
+  if (!petitionDataId || !/^\d+$/.test(String(petitionDataId))) {
+    setTokenPurchaseStatus("A real reference ID is required before token purchases can start.");
+    return;
+  }
+
+  try {
+    setTokenPurchaseStatus("Preparing secure checkout...");
+    const coupon = document.getElementById("tokenCouponInput")?.value?.trim() || "";
+    const response = await fetch(`${getApiBaseUrl()}/petition/create-token-checkout-session`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        rB: parseInt(petitionDataId, 10),
+        package_key: selectedTokenPackageKey,
+        coupon,
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.detail || "Unable to start token checkout.");
+    }
+
+    if (tokenCheckoutInstance) {
+      tokenCheckoutInstance.unmount();
+      tokenCheckoutInstance = null;
+    }
+
+    tokenCheckoutInstance = await stripeClient.initEmbeddedCheckout({
+      fetchClientSecret: async () => data.clientSecret,
+    });
+    tokenCheckoutInstance.mount("#tokenCheckoutHost");
+    setTokenPurchaseStatus("Checkout loaded. Complete payment below to refill your AI-Tokens.");
+  } catch (error) {
+    console.error("Token checkout failed:", error);
+    setTokenPurchaseStatus(getCheckoutErrorMessage(error));
+    showToast(getCheckoutErrorMessage(error), "error", 5000);
+  }
+}
+
+async function handleReturnedTokenPurchase() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const purchaseType = urlParams.get("purchase");
+  const sessionId = urlParams.get("session_id");
+  if (purchaseType !== "token" || !sessionId) {
+    return;
+  }
+
+  try {
+    setTokenPurchaseStatus("Finalizing token purchase...");
+    const response = await fetch(
+      `${getApiBaseUrl()}/petition/token-session-status?session_id=${encodeURIComponent(sessionId)}`
+    );
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.detail || "Unable to finalize token purchase.");
+    }
+
+    if (typeof data.ai_token_balance === "number") {
+      tokenBalance = data.ai_token_balance;
+      setTokenDisplay(tokenBalance, "Backend AI Ready");
+    }
+    const purchased = data.token_amount || 0;
+    showToast(
+      data.already_fulfilled
+        ? `Token purchase already applied. ${tokenBalance} AI-Tokens available.`
+        : `${purchased} AI-Tokens added successfully. ${tokenBalance} available now.`,
+      "success",
+      5000
+    );
+    closeTokenPurchaseModal();
+    if (pendingAiAction) {
+      const actionToRetry = pendingAiAction;
+      pendingAiAction = null;
+      if (actionToRetry.action === "compile_complete_draft") {
+        await compileAndDownloadDraft();
+      } else {
+        await runAiAction(actionToRetry.action, actionToRetry.evidenceItem);
+      }
+    }
+
+    urlParams.delete("purchase");
+    urlParams.delete("session_id");
+    const newQuery = urlParams.toString();
+    const nextUrl = `${window.location.pathname}${newQuery ? `?${newQuery}` : ""}`;
+    window.history.replaceState({}, document.title, nextUrl);
+  } catch (error) {
+    console.error("Token purchase finalization failed:", error);
+    setTokenPurchaseStatus(getCheckoutErrorMessage(error));
+    showToast(getCheckoutErrorMessage(error), "error", 5000);
+    openTokenPurchaseModal();
+  }
 }
 
 function markSectionSaved(sectionKey, isSaved) {
@@ -740,7 +932,10 @@ async function callBackendAction(action, evidenceItem = null) {
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data.detail || "Petition AI action failed.");
+    const error = new Error(data.detail || "Petition AI action failed.");
+    error.status = response.status;
+    error.payload = data;
+    throw error;
   }
   tokenBalance = data.ai_token_balance;
   setTokenDisplay(tokenBalance, "Backend AI Ready");
@@ -783,8 +978,18 @@ async function runAiAction(action, evidenceItem = null) {
     }
   } catch (error) {
     console.error("Petition AI action failed:", error);
-    setStatus("evidenceStatus", error.message || "Petition AI action failed.");
-    showToast(error.message || "Petition AI action failed.", "error", 5000);
+    if (error?.status === 402 && backendAiReady) {
+      pendingAiAction = { action, evidenceItem };
+      openTokenPurchaseModal(actionCost, action);
+      setStatus(
+        "evidenceStatus",
+        error.message || "This action needs more AI-Tokens. Please purchase more to continue."
+      );
+      showToast("Not enough AI-Tokens. Opened purchase checkout.", "info", 5000);
+    } else {
+      setStatus("evidenceStatus", error.message || "Petition AI action failed.");
+      showToast(error.message || "Petition AI action failed.", "error", 5000);
+    }
   } finally {
     setAiButtonsBusy(false);
   }
@@ -897,8 +1102,18 @@ async function compileAndDownloadDraft() {
     }
   } catch (error) {
     console.error("Complete draft compile failed:", error);
-    setStatus("evidenceStatus", error.message || "Complete draft compile failed.");
-    showToast(error.message || "Complete draft compile failed.", "error", 5000);
+    if (error?.status === 402 && backendAiReady) {
+      pendingAiAction = { action: "compile_complete_draft", evidenceItem: null };
+      openTokenPurchaseModal(getActionCost("compile_complete_draft"), "compile_complete_draft");
+      setStatus(
+        "evidenceStatus",
+        error.message || "This compile needs more AI-Tokens. Please purchase more to continue."
+      );
+      showToast("Not enough AI-Tokens. Opened purchase checkout.", "info", 5000);
+    } else {
+      setStatus("evidenceStatus", error.message || "Complete draft compile failed.");
+      showToast(error.message || "Complete draft compile failed.", "error", 5000);
+    }
   } finally {
     setAiButtonsBusy(false);
   }
@@ -1044,6 +1259,19 @@ function bindCollapseToggles() {
   });
 }
 
+function bindTokenPurchaseUi() {
+  document.getElementById("closeTokenModalBtn")?.addEventListener("click", closeTokenPurchaseModal);
+  document.getElementById("startTokenCheckoutBtn")?.addEventListener("click", startTokenCheckout);
+  document.getElementById("tokenPackageGrid")?.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    const packageCard = target.closest("[data-package-key]");
+    if (!packageCard) return;
+    selectedTokenPackageKey = packageCard.dataset.packageKey || selectedTokenPackageKey;
+    renderTokenPackages();
+  });
+}
+
 function bindDirtyTracking() {
   document.getElementById("section3Text")?.addEventListener("input", () => {
     markSectionSaved("section3", false);
@@ -1087,11 +1315,14 @@ function initializePetitionTemplate() {
   bindEvidenceEditor();
   bindCollapseToggles();
   bindDirtyTracking();
+  bindTokenPurchaseUi();
 
   document.getElementById("printPetitionBtn")?.addEventListener("click", exportDocx);
   document.getElementById("compileDraftBtn")?.addEventListener("click", compileAndDownloadDraft);
 
+  fetchTokenPackages();
   fetchUserState();
+  handleReturnedTokenPurchase();
 }
 
 document.addEventListener("DOMContentLoaded", initializePetitionTemplate);

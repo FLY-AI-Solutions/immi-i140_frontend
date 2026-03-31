@@ -31,8 +31,29 @@ const fallbackSeed = {
   },
 };
 
+const defaultActionCosts = {
+  generate_section_3: 3,
+  validate_evidence: 2,
+  generate_section_1: 5,
+  generate_section_2: 7,
+  coherency_check: 3,
+};
+
+const buttonActionMap = {
+  generateSection3Btn: "generate_section_3",
+  validateEvidenceBtn: "validate_evidence",
+  generateSection1Btn: "generate_section_1",
+  generateSection2Btn: "generate_section_2",
+  coherencyCheckBtn: "coherency_check",
+};
+
 let petitionSeed = fallbackSeed;
 let evidenceState = [];
+let petitionDataId = "";
+let petitionActionCosts = { ...defaultActionCosts };
+let tokenBalance = null;
+let backendAiReady = false;
+let aiBusy = false;
 
 function readSeed() {
   try {
@@ -60,11 +81,56 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
+function getApiBaseUrl() {
+  return window.ImmiAppConfig?.apiBaseUrl || "";
+}
+
+function getActionCost(action) {
+  return petitionActionCosts[action] ?? defaultActionCosts[action] ?? 0;
+}
+
 function setStatus(targetId, message) {
   const el = document.getElementById(targetId);
   if (el) {
     el.textContent = message || "";
   }
+}
+
+function setTokenDisplay(balance, statusText) {
+  const balanceEl = document.getElementById("tokenBalanceValue");
+  const statusEl = document.getElementById("tokenStatusValue");
+  if (balanceEl) {
+    balanceEl.textContent = balance == null ? "--" : `${balance}`;
+  }
+  if (statusEl) {
+    statusEl.textContent = statusText || "Ready";
+  }
+}
+
+function refreshButtonLabels() {
+  Object.entries(buttonActionMap).forEach(([buttonId, action]) => {
+    const button = document.getElementById(buttonId);
+    if (!button) return;
+
+    const labels = {
+      generate_section_3: "Generate Section-3 from Report",
+      validate_evidence: "Validate Attached Evidence",
+      generate_section_1: "Generate Section-1",
+      generate_section_2: "Expand to Section-2",
+      coherency_check: "Coherency Check & Rephrase",
+    };
+    button.textContent = `${labels[action]} (${getActionCost(action)} AI-Tokens)`;
+  });
+}
+
+function setAiButtonsBusy(isBusy) {
+  aiBusy = isBusy;
+  Object.keys(buttonActionMap).forEach((buttonId) => {
+    const button = document.getElementById(buttonId);
+    if (button) {
+      button.disabled = isBusy;
+    }
+  });
 }
 
 function makeEvidenceItem(overrides = {}) {
@@ -223,9 +289,13 @@ function findEvidenceItem(element) {
 }
 
 function buildSection3Text() {
-  const lines = ["INDEX OF EXHIBITS"];
+  const lines = ["SECTION 3", "", "INDEX OF EXHIBITS"];
   evidenceState.forEach((item) => {
-    lines.push(`${item.exhibitLabel}\t${item.title || "Untitled exhibit"}${item.purpose ? ` - ${item.purpose}` : ""}`);
+    lines.push(
+      `${item.exhibitLabel}\t${item.title || "Untitled exhibit"}${
+        item.purpose ? ` - ${item.purpose}` : ""
+      }`
+    );
   });
   return lines.join("\n");
 }
@@ -245,13 +315,12 @@ function buildSection1Text() {
     `This draft brief is prepared in support of the self-petition filed by ${userName}. It is intended as a working template for organizing the petition narrative, exhibit map, and evidence-backed argument structure before final legal review or polishing.`,
     "",
     "At this stage, the record supports the following preliminary themes:",
-    ...pathways.map(
-      (pathway, index) =>
-        `${index + 1}. ${pathway.label}: ${pathway.summary}`
-    ),
+    ...pathways.map((pathway, index) => `${index + 1}. ${pathway.label}: ${pathway.summary}`),
     "",
     "The following exhibits have currently been mapped into the opening section:",
-    ...(chosenEvidence.length ? chosenEvidence.map((line) => `- ${line}`) : ["- User still needs to select supporting exhibits."]),
+    ...(chosenEvidence.length
+      ? chosenEvidence.map((line) => `- ${line}`)
+      : ["- User still needs to select supporting exhibits."]),
     "",
     "This section should remain editable so the petitioner can revise voice, emphasis, and personal framing after evidence is finalized.",
   ].join("\n");
@@ -277,7 +346,11 @@ function buildSection2Text() {
     sections.push("Suggested evidence references:");
     if (sectionEvidence.length) {
       sectionEvidence.forEach((item) => {
-        sections.push(`- ${item.exhibitLabel}: ${item.title || "Untitled exhibit"}${item.notes ? ` (${item.notes})` : ""}`);
+        sections.push(
+          `- ${item.exhibitLabel}: ${item.title || "Untitled exhibit"}${
+            item.notes ? ` (${item.notes})` : ""
+          }`
+        );
       });
     } else {
       sections.push("- Add evidence rows and map them here.");
@@ -290,6 +363,14 @@ function buildSection2Text() {
   );
 
   return sections.join("\n");
+}
+
+function getSectionTexts() {
+  return {
+    section_1: document.getElementById("section1Text")?.value || "",
+    section_2: document.getElementById("section2Text")?.value || "",
+    section_3: document.getElementById("section3Text")?.value || "",
+  };
 }
 
 function updateField(element) {
@@ -322,7 +403,7 @@ function showSeedHeader(source) {
   }
 }
 
-function runDummyEvidenceValidation() {
+function runLocalEvidenceValidation() {
   const issues = evidenceState
     .filter((item) => !item.title || !item.purpose)
     .map((item) => `${item.exhibitLabel} needs a clearer title or purpose statement.`);
@@ -331,81 +412,217 @@ function runDummyEvidenceValidation() {
     .filter((item) => item.attachmentName === "No file selected")
     .map((item) => `${item.exhibitLabel} has no file attached yet.`);
 
-  const message = [...issues, ...attachmentWarnings];
-  setStatus(
-    "evidenceStatus",
-    message.length
-      ? `Dummy validation: ${message.join(" ")}`
-      : "Dummy validation: current evidence rows look organized enough for drafting."
-  );
+  return {
+    action: "validate_evidence",
+    message: "Local validation completed in demo mode.",
+    validation_summary:
+      [...issues, ...attachmentWarnings].join(" ") ||
+      "Current evidence rows look organized enough for drafting.",
+    evidence_feedback: [...issues, ...attachmentWarnings],
+  };
 }
 
-function runDummyCoherencyCheck() {
+function runLocalCoherencyCheck() {
   const section1 = document.getElementById("section1Text");
   const section2 = document.getElementById("section2Text");
-  if (!section1 || !section2) return;
-
-  const note =
-    "\n\n[Coherency pass placeholder] Future AI step: align tone, remove repetition, and make exhibit references consistent across all sections.";
-  if (!section1.value.includes("[Coherency pass placeholder]")) {
-    section1.value += note;
-  }
-  if (!section2.value.includes("[Coherency pass placeholder]")) {
-    section2.value += note;
-  }
-}
-
-function initializePetitionTemplate() {
-  const seedResult = readSeed();
-  petitionSeed = seedResult.seed;
-  evidenceState = seedEvidenceFromReport(petitionSeed.reportSummary);
-
-  showSeedHeader(seedResult.source);
-  renderReportInsights();
-  renderEvidenceList();
-
   const section3 = document.getElementById("section3Text");
+  const note =
+    "[Coherency pass placeholder] Future AI step: align tone, remove repetition, and make exhibit references consistent across all sections.";
+
+  const patchText = (value) => (value.includes(note) ? value : `${value}\n\n${note}`);
+
+  return {
+    action: "coherency_check",
+    message: "Local coherency placeholder applied in demo mode.",
+    updated_section_1: section1 ? patchText(section1.value) : null,
+    updated_section_2: section2 ? patchText(section2.value) : null,
+    updated_section_3: section3 ? patchText(section3.value) : null,
+    coherence_notes: [note],
+  };
+}
+
+function runLocalAction(action) {
+  if (action === "generate_section_3") {
+    return {
+      action,
+      message: "Section-3 regenerated locally in demo mode.",
+      updated_section_3: buildSection3Text(),
+    };
+  }
+  if (action === "generate_section_1") {
+    return {
+      action,
+      message: "Section-1 regenerated locally in demo mode.",
+      updated_section_1: buildSection1Text(),
+    };
+  }
+  if (action === "generate_section_2") {
+    return {
+      action,
+      message: "Section-2 regenerated locally in demo mode.",
+      updated_section_2: buildSection2Text(),
+    };
+  }
+  if (action === "validate_evidence") {
+    return runLocalEvidenceValidation();
+  }
+  if (action === "coherency_check") {
+    return runLocalCoherencyCheck();
+  }
+  return {
+    action,
+    message: "No local handler available for this action.",
+  };
+}
+
+function applyActionResult(result) {
+  if (!result) return;
+
   const section1 = document.getElementById("section1Text");
   const section2 = document.getElementById("section2Text");
+  const section3 = document.getElementById("section3Text");
 
-  if (section3) section3.value = buildSection3Text();
-  if (section1) section1.value = buildSection1Text();
-  if (section2) section2.value = buildSection2Text();
+  if (section1 && result.updated_section_1) {
+    section1.value = result.updated_section_1;
+  }
+  if (section2 && result.updated_section_2) {
+    section2.value = result.updated_section_2;
+  }
+  if (section3 && result.updated_section_3) {
+    section3.value = result.updated_section_3;
+  }
 
-  document.getElementById("generateSection3Btn")?.addEventListener("click", () => {
-    if (section3) {
-      section3.value = buildSection3Text();
+  const messageParts = [
+    result.message,
+    result.validation_summary,
+    Array.isArray(result.evidence_feedback) && result.evidence_feedback.length
+      ? result.evidence_feedback.join(" ")
+      : "",
+    Array.isArray(result.coherence_notes) && result.coherence_notes.length
+      ? result.coherence_notes.join(" ")
+      : "",
+  ].filter(Boolean);
+
+  setStatus("evidenceStatus", messageParts.join(" "));
+}
+
+function toggleSection(targetId, button) {
+  const body = document.getElementById(targetId);
+  if (!body) return;
+  const head = body.previousElementSibling;
+  const isHidden = body.classList.toggle("hidden");
+  if (head) {
+    head.classList.toggle("is-collapsed", isHidden);
+  }
+  if (button) {
+    button.textContent = isHidden ? "Expand" : "Collapse";
+  }
+}
+
+async function fetchUserState() {
+  if (!petitionDataId || !/^\d+$/.test(String(petitionDataId))) {
+    backendAiReady = false;
+    setTokenDisplay(null, "Demo Mode");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `${getApiBaseUrl()}/petition/user-state/${petitionDataId}`
+    );
+    if (!response.ok) {
+      throw new Error(`Failed to fetch petition user state: ${response.status}`);
     }
-    setStatus("evidenceStatus", "Section-3 refreshed from the current evidence stack.");
+
+    const result = await response.json();
+    petitionActionCosts = {
+      ...petitionActionCosts,
+      ...(result.action_costs || {}),
+    };
+    tokenBalance = result.ai_token_balance;
+    backendAiReady = true;
+    setTokenDisplay(tokenBalance, "Backend AI Ready");
+    refreshButtonLabels();
+  } catch (error) {
+    console.error("Petition token fetch failed:", error);
+    backendAiReady = false;
+    setTokenDisplay(null, "Demo Mode");
+    setStatus(
+      "evidenceStatus",
+      "Backend AI state could not be loaded, so the page is running in local demo mode."
+    );
+  }
+}
+
+async function callBackendAction(action) {
+  const response = await fetch(`${getApiBaseUrl()}/petition/ai-action`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      rB: parseInt(petitionDataId, 10),
+      action,
+      report_summary: petitionSeed.reportSummary || {},
+      evidence_items: evidenceState,
+      section_texts: getSectionTexts(),
+      packet_notes: document.getElementById("packetNotes")?.value || "",
+    }),
   });
 
-  document.getElementById("validateEvidenceBtn")?.addEventListener("click", () => {
-    runDummyEvidenceValidation();
-  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.detail || "Petition AI action failed.");
+  }
+  tokenBalance = data.ai_token_balance;
+  setTokenDisplay(tokenBalance, "Backend AI Ready");
+  return data.result;
+}
 
-  document.getElementById("generateSection1Btn")?.addEventListener("click", () => {
-    if (section1) {
-      section1.value = buildSection1Text();
+async function runAiAction(action) {
+  const actionCost = getActionCost(action);
+  if (aiBusy) return;
+
+  try {
+    setAiButtonsBusy(true);
+    setStatus("evidenceStatus", `Running ${action.replaceAll("_", " ")}...`);
+
+    const result = backendAiReady
+      ? await callBackendAction(action)
+      : runLocalAction(action);
+
+    if (!backendAiReady) {
+      setTokenDisplay(null, "Demo Mode");
+    } else if (tokenBalance != null) {
+      setTokenDisplay(tokenBalance, `${actionCost} Tokens Used`);
     }
-    setStatus("evidenceStatus", "Section-1 regenerated from the current report seed and evidence rows.");
-  });
 
-  document.getElementById("generateSection2Btn")?.addEventListener("click", () => {
-    if (section2) {
-      section2.value = buildSection2Text();
-    }
-    setStatus("evidenceStatus", "Section-2 expanded into a longer draft scaffold.");
-  });
+    applyActionResult(result);
+  } catch (error) {
+    console.error("Petition AI action failed:", error);
+    setStatus("evidenceStatus", error.message || "Petition AI action failed.");
+  } finally {
+    setAiButtonsBusy(false);
+  }
+}
 
-  document.getElementById("coherencyCheckBtn")?.addEventListener("click", () => {
-    runDummyCoherencyCheck();
-    setStatus("evidenceStatus", "Coherency placeholder added. Future AI can replace this with a real revision pass.");
-  });
+function bindActionButtons() {
+  document
+    .getElementById("generateSection3Btn")
+    ?.addEventListener("click", () => runAiAction("generate_section_3"));
+  document
+    .getElementById("validateEvidenceBtn")
+    ?.addEventListener("click", () => runAiAction("validate_evidence"));
+  document
+    .getElementById("generateSection1Btn")
+    ?.addEventListener("click", () => runAiAction("generate_section_1"));
+  document
+    .getElementById("generateSection2Btn")
+    ?.addEventListener("click", () => runAiAction("generate_section_2"));
+  document
+    .getElementById("coherencyCheckBtn")
+    ?.addEventListener("click", () => runAiAction("coherency_check"));
+}
 
-  document.getElementById("printPetitionBtn")?.addEventListener("click", () => {
-    window.print();
-  });
-
+function bindEvidenceEditor() {
   document.getElementById("addEvidenceBtn")?.addEventListener("click", () => {
     evidenceState.push(
       makeEvidenceItem({
@@ -432,7 +649,13 @@ function initializePetitionTemplate() {
 
   document.getElementById("evidenceList")?.addEventListener("input", (event) => {
     const target = event.target;
-    if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement)) {
+    if (
+      !(
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement
+      )
+    ) {
       return;
     }
     if (target.dataset.field) {
@@ -446,7 +669,11 @@ function initializePetitionTemplate() {
       handleAttachmentInput(target);
       return;
     }
-    if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) {
+    if (
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement ||
+      target instanceof HTMLSelectElement
+    ) {
       if (target.dataset.field) {
         updateField(target);
       }
@@ -463,6 +690,45 @@ function initializePetitionTemplate() {
     renderEvidenceList();
     setStatus("evidenceStatus", `${item.exhibitLabel} was removed.`);
   });
+}
+
+function bindCollapseToggles() {
+  document.querySelectorAll("[data-collapse-target]").forEach((button) => {
+    button.addEventListener("click", () => {
+      toggleSection(button.dataset.collapseTarget, button);
+    });
+  });
+}
+
+function initializePetitionTemplate() {
+  const seedResult = readSeed();
+  petitionSeed = seedResult.seed;
+  const urlParams = new URLSearchParams(window.location.search);
+  petitionDataId = urlParams.get("rB") || petitionSeed.referenceId || "";
+  evidenceState = seedEvidenceFromReport(petitionSeed.reportSummary);
+
+  showSeedHeader(seedResult.source);
+  renderReportInsights();
+  renderEvidenceList();
+  refreshButtonLabels();
+
+  const section3 = document.getElementById("section3Text");
+  const section1 = document.getElementById("section1Text");
+  const section2 = document.getElementById("section2Text");
+
+  if (section3) section3.value = buildSection3Text();
+  if (section1) section1.value = buildSection1Text();
+  if (section2) section2.value = buildSection2Text();
+
+  bindActionButtons();
+  bindEvidenceEditor();
+  bindCollapseToggles();
+
+  document.getElementById("printPetitionBtn")?.addEventListener("click", () => {
+    window.print();
+  });
+
+  fetchUserState();
 }
 
 document.addEventListener("DOMContentLoaded", initializePetitionTemplate);

@@ -163,6 +163,17 @@
         background: linear-gradient(135deg, #f6e3a9, #dec57d);
         transform: translateY(-1px);
       }
+      .petition-compile-btn {
+        color: #fff;
+        background: linear-gradient(135deg, rgba(137, 120, 96, 0.95), rgba(93, 78, 61, 0.98));
+        border: 1px solid rgba(255, 255, 255, 0.18);
+      }
+      .petition-compile-btn:hover,
+      .petition-compile-btn:focus {
+        color: #fff;
+        background: linear-gradient(135deg, rgba(149, 130, 104, 0.98), rgba(104, 87, 69, 0.98));
+        transform: translateY(-1px);
+      }
       .token-panel {
         display: flex;
         flex-wrap: wrap;
@@ -487,8 +498,11 @@
           </div>
         </div>
         <div class="petition-toolbar">
+          <button id="compileDraftBtn" class="btn petition-compile-btn" type="button">
+            Compile Complete Draft On Saved Evidences/Reasonings
+          </button>
           <button id="printPetitionBtn" class="btn petition-print-btn" type="button">
-            Print Draft Packet
+            <i class="bi bi-download me-1"></i> Download Draft
           </button>
         </div>
       </section>

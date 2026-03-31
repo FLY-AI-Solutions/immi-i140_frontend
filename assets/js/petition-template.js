@@ -37,6 +37,7 @@ const defaultActionCosts = {
   generate_evidence_reasoning: 4,
   generate_section_1: 5,
   generate_section_2: 7,
+  compile_complete_draft: 9,
   coherency_check: 3,
 };
 
@@ -47,6 +48,7 @@ let petitionActionCosts = { ...defaultActionCosts };
 let tokenBalance = null;
 let backendAiReady = false;
 let aiBusy = false;
+let compiledDraftText = "";
 const sectionSaveState = {
   section3: false,
   section1: false,
@@ -151,6 +153,7 @@ function setAiButtonsBusy(isBusy) {
     "generateSection1Btn",
     "generateSection2Btn",
     "coherencyCheckBtn",
+    "compileDraftBtn",
   ].forEach((id) => {
     const button = document.getElementById(id);
     if (button) {
@@ -413,6 +416,29 @@ function buildSection2Text() {
   return sections.join("\n");
 }
 
+function buildCompiledDraftText() {
+  const referenceLine = petitionDataId || petitionSeed.referenceId || "Draft";
+  const section3 = document.getElementById("section3Text")?.value?.trim() || buildSection3Text();
+  const section1 = document.getElementById("section1Text")?.value?.trim() || buildSection1Text();
+  const section2 = document.getElementById("section2Text")?.value?.trim() || buildSection2Text();
+  const notes = document.getElementById("packetNotes")?.value?.trim() || "";
+
+  return [
+    "EVIDENCE-BASED I-140 DRAFT PETITION",
+    `Reference ID: ${referenceLine}`,
+    "",
+    section1,
+    "",
+    section2,
+    "",
+    section3,
+    notes ? "\nPACKET NOTES\n" : "",
+    notes,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 function getSectionTexts() {
   return {
     section_1: document.getElementById("section1Text")?.value || "",
@@ -545,6 +571,13 @@ function runLocalAction(action, evidenceItem = null) {
   if (action === "coherency_check") {
     return runLocalCoherencyCheck();
   }
+  if (action === "compile_complete_draft") {
+    return {
+      action,
+      message: "Complete petition draft compiled locally in demo mode.",
+      compiled_draft_text: buildCompiledDraftText(),
+    };
+  }
   return {
     action,
     message: "No local handler available for this action.",
@@ -579,6 +612,9 @@ function applyActionResult(result) {
   if (section3 && result.updated_section_3) {
     section3.value = result.updated_section_3;
     markSectionSaved("section3", false);
+  }
+  if (result.compiled_draft_text) {
+    compiledDraftText = result.compiled_draft_text;
   }
 
   const messageParts = [
@@ -718,9 +754,10 @@ async function runAiAction(action, evidenceItem = null) {
   }
 }
 
-async function exportDocx() {
+async function downloadDocx(compiledText = "") {
   if (!backendAiReady) {
     setStatus("evidenceStatus", "DOCX export requires the backend petition service.");
+    showToast("DOCX export requires the backend petition service.", "error", 4500);
     return;
   }
 
@@ -732,6 +769,7 @@ async function exportDocx() {
         reference_id: petitionDataId || petitionSeed.referenceId || "draft",
         section_texts: getSectionTexts(),
         packet_notes: document.getElementById("packetNotes")?.value || "",
+        compiled_draft_text: compiledText || compiledDraftText || "",
       }),
     });
 
@@ -765,6 +803,68 @@ async function exportDocx() {
     console.error("DOCX export failed:", error);
     setStatus("evidenceStatus", error.message || "DOCX export failed.");
     showToast(error.message || "DOCX export failed.", "error", 5000);
+  }
+}
+
+async function exportDocx() {
+  await downloadDocx();
+}
+
+async function compileAndDownloadDraft() {
+  if (!requireSaved("section3", "Save Section-A before compiling the complete draft.")) {
+    return;
+  }
+  if (!requireSaved("section1", "Save Section-B before compiling the complete draft.")) {
+    return;
+  }
+  if (!requireSaved("section2", "Save Section-C before compiling the complete draft.")) {
+    return;
+  }
+
+  try {
+    if (aiBusy) return;
+
+    setAiButtonsBusy(true);
+    setStatus("evidenceStatus", "Compiling the full petition draft...");
+    showToast("AI action in progress: compiling the complete draft.", "info", 3500);
+
+    let result;
+    let usedTokens = 0;
+    if (backendAiReady) {
+      const backendPayload = await callBackendAction("compile_complete_draft");
+      result = backendPayload.result;
+      usedTokens = backendPayload.tokenCost || getActionCost("compile_complete_draft");
+      if (tokenBalance != null) {
+        setTokenDisplay(tokenBalance, `${usedTokens} Tokens Used`);
+      }
+    } else {
+      result = runLocalAction("compile_complete_draft");
+      setTokenDisplay(null, "Demo Mode");
+    }
+
+    applyActionResult(result);
+    const finalCompiledText = result?.compiled_draft_text || compiledDraftText || buildCompiledDraftText();
+
+    if (backendAiReady) {
+      showToast(`${usedTokens} AI-Tokens used. ${tokenBalance} remaining.`, "success", 4500);
+      await downloadDocx(finalCompiledText);
+    } else {
+      setStatus(
+        "evidenceStatus",
+        "Demo-mode compile completed. Connect the backend petition service to download DOCX output."
+      );
+      showToast(
+        "Demo-mode compile completed. Backend connection is required for DOCX download.",
+        "success",
+        4500
+      );
+    }
+  } catch (error) {
+    console.error("Complete draft compile failed:", error);
+    setStatus("evidenceStatus", error.message || "Complete draft compile failed.");
+    showToast(error.message || "Complete draft compile failed.", "error", 5000);
+  } finally {
+    setAiButtonsBusy(false);
   }
 }
 
@@ -953,6 +1053,7 @@ function initializePetitionTemplate() {
   bindDirtyTracking();
 
   document.getElementById("printPetitionBtn")?.addEventListener("click", exportDocx);
+  document.getElementById("compileDraftBtn")?.addEventListener("click", compileAndDownloadDraft);
 
   fetchUserState();
 }

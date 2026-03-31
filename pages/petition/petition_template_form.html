@@ -35,6 +35,40 @@
         margin: 0 auto;
         padding: 2rem 1rem 4rem;
       }
+      .toast-stack {
+        position: fixed;
+        left: 1.25rem;
+        bottom: 1.25rem;
+        z-index: 2200;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .toast-card {
+        min-width: 280px;
+        max-width: 360px;
+        padding: 0.95rem 1rem;
+        border-radius: 16px;
+        color: #fff;
+        background: rgba(28, 28, 28, 0.96);
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
+        opacity: 0;
+        transform: translateY(18px);
+        transition: opacity 0.25s ease, transform 0.25s ease;
+      }
+      .toast-card.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .toast-card.success {
+        border-left: 4px solid #12b76a;
+      }
+      .toast-card.error {
+        border-left: 4px solid #f04438;
+      }
+      .toast-card.info {
+        border-left: 4px solid #7c8aa5;
+      }
       .petition-hero {
         background: linear-gradient(135deg, rgba(32, 34, 38, 0.97), rgba(73, 64, 54, 0.93));
         color: #fff;
@@ -153,8 +187,9 @@
         margin-top: 1.1rem;
         border: 1px solid var(--petition-line);
         border-radius: 20px;
-        background: var(--petition-paper);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 253, 249, 0.96));
         overflow: hidden;
+        box-shadow: 0 16px 32px rgba(15, 23, 42, 0.05);
       }
       .petition-stage-head {
         display: flex;
@@ -163,7 +198,7 @@
         align-items: flex-start;
         padding: 1rem 1.1rem;
         border-bottom: 1px solid var(--petition-line);
-        background: linear-gradient(180deg, rgba(185, 176, 162, 0.18), rgba(255, 255, 255, 0));
+        background: linear-gradient(180deg, rgba(185, 176, 162, 0.2), rgba(255, 255, 255, 0.35));
       }
       .petition-stage-head.is-collapsed {
         border-bottom: none;
@@ -222,10 +257,11 @@
         border: 1px solid #d7d2ca;
         border-radius: 18px;
         padding: 1rem;
-        background: #fff;
+        background: linear-gradient(180deg, #fffefc 0%, #ffffff 100%);
         font-family: "Times New Roman", Times, serif;
         line-height: 1.7;
         resize: vertical;
+        box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
       }
       .petition-textarea.section-compact {
         min-height: 220px;
@@ -233,12 +269,31 @@
       .section-prompt {
         width: 100%;
         min-height: 120px;
-        border: 1px solid #d7d2ca;
-        border-radius: 18px;
-        padding: 0.9rem 1rem;
-        background: #fff;
+        border: 1px solid #d8cdb6;
+        border-radius: 20px;
+        padding: 1rem 1.1rem;
+        background:
+          linear-gradient(180deg, rgba(255, 247, 226, 0.86), rgba(255, 255, 255, 0.98));
         resize: vertical;
         margin-bottom: 0.85rem;
+        box-shadow: inset 0 1px 2px rgba(122, 90, 24, 0.05);
+      }
+      .prompt-panel {
+        border: 1px solid #e2d3b0;
+        border-radius: 22px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background:
+          radial-gradient(circle at top right, rgba(244, 223, 163, 0.32), transparent 32%),
+          linear-gradient(180deg, rgba(255, 250, 236, 0.95), rgba(255, 255, 255, 0.98));
+      }
+      .prompt-panel h3 {
+        font-size: 1rem;
+        margin-bottom: 0.35rem;
+      }
+      .prompt-panel p {
+        margin-bottom: 0.8rem;
+        color: #6b5b3c;
       }
       .save-badge {
         border-radius: 999px;
@@ -301,7 +356,7 @@
       .evidence-item {
         border: 1px solid var(--petition-line);
         border-radius: 18px;
-        background: #fff;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(250, 248, 243, 0.96));
         padding: 1rem;
       }
       .evidence-grid {
@@ -364,6 +419,15 @@
       @media (max-width: 768px) {
         .evidence-grid {
           grid-template-columns: 1fr;
+        }
+        .toast-stack {
+          right: 1rem;
+          left: 1rem;
+          bottom: 1rem;
+        }
+        .toast-card {
+          max-width: none;
+          min-width: 0;
         }
       }
       @media print {
@@ -516,10 +580,10 @@
               <div class="stage-actions">
                 <span id="section2SavedBadge" class="save-badge pending">Not Saved</span>
                 <button id="generateSection2Btn" class="btn btn-outline-dark btn-sm" type="button">
-                  Generate (7 AI-Tokens)
+                  Generate
                 </button>
                 <button id="coherencyCheckBtn" class="btn btn-outline-secondary btn-sm" type="button">
-                  Rephrase (3 AI-Tokens)
+                  Rephrase
                 </button>
                 <button id="saveSection2Btn" class="btn btn-dark btn-sm" type="button">
                   Save
@@ -530,11 +594,18 @@
               </div>
             </div>
             <div class="petition-stage-body" id="section2Body">
-              <textarea
-                id="section2Prompt"
-                class="section-prompt"
-                placeholder="Before generating or regenerating Section-C, describe the writing style or changes you want here. Example: make the body more formal, soften unsupported claims, focus more on national importance, or improve exhibit references."
-              ></textarea>
+              <div class="prompt-panel">
+                <h3>Section-C Writing Direction</h3>
+                <p>
+                  Tell the AI how you want the petition body to read before generating or regenerating it.
+                  You can ask for tone changes, more emphasis on a prong, tighter exhibit references, or softer language.
+                </p>
+                <textarea
+                  id="section2Prompt"
+                  class="section-prompt"
+                  placeholder="Example: make the writing more formal, strengthen the national importance reasoning, reduce repetition, and keep exhibit references concise."
+                ></textarea>
+              </div>
               <textarea id="section2Text" class="petition-textarea"></textarea>
             </div>
           </article>
@@ -593,5 +664,6 @@
         </aside>
       </section>
     </main>
+    <div id="toastStack" class="toast-stack" aria-live="polite"></div>
   </body>
 </html>

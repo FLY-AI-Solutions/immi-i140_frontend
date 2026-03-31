@@ -107,10 +107,10 @@ function setTokenDisplay(balance, statusText) {
 
 function refreshButtonLabels() {
   const labels = {
-    generateSection3Btn: `Generate (${getActionCost("generate_section_3")} AI-Tokens)`,
-    generateSection1Btn: `Generate (${getActionCost("generate_section_1")} AI-Tokens)`,
-    generateSection2Btn: `Generate (${getActionCost("generate_section_2")} AI-Tokens)`,
-    coherencyCheckBtn: `Rephrase (${getActionCost("coherency_check")} AI-Tokens)`,
+    generateSection3Btn: "Generate",
+    generateSection1Btn: "Generate",
+    generateSection2Btn: "Generate",
+    coherencyCheckBtn: "Rephrase",
   };
 
   Object.entries(labels).forEach(([id, label]) => {
@@ -119,6 +119,29 @@ function refreshButtonLabels() {
       button.textContent = label;
     }
   });
+}
+
+function ensureToastStack() {
+  return document.getElementById("toastStack");
+}
+
+function showToast(message, type = "info", duration = 4000) {
+  const stack = ensureToastStack();
+  if (!stack) return;
+
+  const toast = document.createElement("div");
+  toast.className = `toast-card ${type}`;
+  toast.textContent = message;
+  stack.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.classList.add("show");
+  });
+
+  window.setTimeout(() => {
+    toast.classList.remove("show");
+    window.setTimeout(() => toast.remove(), 250);
+  }, duration);
 }
 
 function setAiButtonsBusy(isBusy) {
@@ -649,7 +672,10 @@ async function callBackendAction(action, evidenceItem = null) {
   }
   tokenBalance = data.ai_token_balance;
   setTokenDisplay(tokenBalance, "Backend AI Ready");
-  return data.result;
+  return {
+    tokenCost: data.token_cost,
+    result: data.result,
+  };
 }
 
 async function runAiAction(action, evidenceItem = null) {
@@ -659,21 +685,34 @@ async function runAiAction(action, evidenceItem = null) {
   try {
     setAiButtonsBusy(true);
     setStatus("evidenceStatus", `Running ${action.replaceAll("_", " ")}...`);
+    showToast(`AI action in progress: ${action.replaceAll("_", " ")}.`, "info", 3000);
 
-    const result = backendAiReady
-      ? await callBackendAction(action, evidenceItem)
-      : runLocalAction(action, evidenceItem);
+    let result;
+    let usedTokens = 0;
+    if (backendAiReady) {
+      const backendPayload = await callBackendAction(action, evidenceItem);
+      result = backendPayload.result;
+      usedTokens = backendPayload.tokenCost || actionCost;
+    } else {
+      result = runLocalAction(action, evidenceItem);
+    }
 
     if (!backendAiReady) {
       setTokenDisplay(null, "Demo Mode");
     } else if (tokenBalance != null) {
-      setTokenDisplay(tokenBalance, `${actionCost} Tokens Used`);
+      setTokenDisplay(tokenBalance, `${usedTokens} Tokens Used`);
     }
 
     applyActionResult(result);
+    if (backendAiReady) {
+      showToast(`${usedTokens} AI-Tokens used. ${tokenBalance} remaining.`, "success", 4500);
+    } else {
+      showToast("Demo-mode AI action completed.", "success", 3500);
+    }
   } catch (error) {
     console.error("Petition AI action failed:", error);
     setStatus("evidenceStatus", error.message || "Petition AI action failed.");
+    showToast(error.message || "Petition AI action failed.", "error", 5000);
   } finally {
     setAiButtonsBusy(false);
   }
@@ -721,9 +760,11 @@ async function exportDocx() {
     link.remove();
     URL.revokeObjectURL(downloadUrl);
     setStatus("evidenceStatus", "DOCX petition file generated successfully.");
+    showToast("Word DOCX petition draft generated successfully.", "success", 4500);
   } catch (error) {
     console.error("DOCX export failed:", error);
     setStatus("evidenceStatus", error.message || "DOCX export failed.");
+    showToast(error.message || "DOCX export failed.", "error", 5000);
   }
 }
 

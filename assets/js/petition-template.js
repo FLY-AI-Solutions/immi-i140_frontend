@@ -34,6 +34,8 @@ const fallbackSeed = {
 const defaultActionCosts = {
   generate_section_3: 3,
   validate_evidence: 2,
+  validate_single_evidence: 2,
+  generate_evidence_reasoning: 4,
   generate_section_1: 5,
   generate_section_2: 7,
   coherency_check: 3,
@@ -108,17 +110,17 @@ function setTokenDisplay(balance, statusText) {
 }
 
 function refreshButtonLabels() {
+  const labels = {
+    generate_section_3: "Generate Section-3 from Report",
+    validate_evidence: "Validate Attached Evidence",
+    generate_section_1: "Generate Section-1",
+    generate_section_2: "Expand to Section-2",
+    coherency_check: "Coherency Check & Rephrase",
+  };
+
   Object.entries(buttonActionMap).forEach(([buttonId, action]) => {
     const button = document.getElementById(buttonId);
     if (!button) return;
-
-    const labels = {
-      generate_section_3: "Generate Section-3 from Report",
-      validate_evidence: "Validate Attached Evidence",
-      generate_section_1: "Generate Section-1",
-      generate_section_2: "Expand to Section-2",
-      coherency_check: "Coherency Check & Rephrase",
-    };
     button.textContent = `${labels[action]} (${getActionCost(action)} AI-Tokens)`;
   });
 }
@@ -140,10 +142,11 @@ function makeEvidenceItem(overrides = {}) {
     exhibitLabel: overrides.exhibitLabel || `Exhibit ${exhibitNumber}`,
     title: overrides.title || "",
     purpose: overrides.purpose || "",
-    sectionFocus: overrides.sectionFocus || "Section-3",
+    sectionFocus: overrides.sectionFocus || "Section-A",
     strength: overrides.strength || "Potentially Useful",
     notes: overrides.notes || "",
     attachmentName: overrides.attachmentName || "No file selected",
+    attachmentProvided: overrides.attachmentProvided || false,
   };
 }
 
@@ -156,21 +159,21 @@ function seedEvidenceFromReport(reportSummary) {
       exhibitLabel: "Exhibit 1",
       title: "Applicant CV / Resume",
       purpose: "Core identity, education, employment, and accomplishments reference document.",
-      sectionFocus: "Section-3",
+      sectionFocus: "Section-A",
       strength: "Strong",
     }),
     makeEvidenceItem({
       exhibitLabel: "Exhibit 2",
       title: "Educational credentials",
       purpose: "Supports advanced degree eligibility and credential foundation.",
-      sectionFocus: "Section-2",
+      sectionFocus: "Section-C",
       strength: "Strong",
     }),
     makeEvidenceItem({
       exhibitLabel: "Exhibit 3",
       title: "Personal endeavor statement",
       purpose: "Supports the applicant's future plans and framing of the proposed endeavor.",
-      sectionFocus: "Section-1",
+      sectionFocus: "Section-B",
       strength: "Strong",
     }),
   ];
@@ -181,7 +184,7 @@ function seedEvidenceFromReport(reportSummary) {
         exhibitLabel: `Exhibit ${index + 4}`,
         title: `${pathway.label} support package`,
         purpose: pathway.summary,
-        sectionFocus: index === 0 ? "Section-2" : index === 1 ? "Section-1" : "Section-2",
+        sectionFocus: index === 1 ? "Section-B" : "Section-C",
         strength: pathway.status || "Potentially Useful",
       })
     );
@@ -235,25 +238,20 @@ function renderEvidenceList() {
               <input type="text" data-field="exhibitLabel" value="${escapeHtml(item.exhibitLabel)}" />
             </label>
             <label>
-              <div class="small text-muted mb-1">Section Focus</div>
-              <select data-field="sectionFocus">
-                <option ${item.sectionFocus === "Section-3" ? "selected" : ""}>Section-3</option>
-                <option ${item.sectionFocus === "Section-1" ? "selected" : ""}>Section-1</option>
-                <option ${item.sectionFocus === "Section-2" ? "selected" : ""}>Section-2</option>
-              </select>
+              <div class="readonly-chip">
+                <strong>Section Focus</strong>
+                ${escapeHtml(item.sectionFocus)}
+              </div>
             </label>
             <label>
               <div class="small text-muted mb-1">Evidence Title</div>
               <input type="text" data-field="title" value="${escapeHtml(item.title)}" />
             </label>
             <label>
-              <div class="small text-muted mb-1">Perceived Strength</div>
-              <select data-field="strength">
-                <option ${item.strength === "Strong" ? "selected" : ""}>Strong</option>
-                <option ${item.strength === "Potentially Useful" ? "selected" : ""}>Potentially Useful</option>
-                <option ${item.strength === "Needs Explanation" ? "selected" : ""}>Needs Explanation</option>
-                <option ${item.strength === "User Added" ? "selected" : ""}>User Added</option>
-              </select>
+              <div class="readonly-chip">
+                <strong>Perceived Strength</strong>
+                ${escapeHtml(item.strength)}
+              </div>
             </label>
             <label style="grid-column: 1 / -1;">
               <div class="small text-muted mb-1">Why this evidence matters</div>
@@ -276,6 +274,22 @@ function renderEvidenceList() {
             </label>
             <span class="attachment-chip">${escapeHtml(item.attachmentName)}</span>
           </div>
+          <div class="evidence-actions mt-3">
+            <button
+              type="button"
+              class="btn btn-outline-dark btn-sm"
+              data-action="validate-single-evidence"
+            >
+              Validate (${getActionCost("validate_single_evidence")} AI-Tokens)
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm"
+              data-action="generate-evidence-reasoning"
+            >
+              Generate Reasoning From Doc (${getActionCost("generate_evidence_reasoning")} AI-Tokens)
+            </button>
+          </div>
         </article>
       `
     )
@@ -289,7 +303,7 @@ function findEvidenceItem(element) {
 }
 
 function buildSection3Text() {
-  const lines = ["SECTION 3", "", "INDEX OF EXHIBITS"];
+  const lines = ["SECTION-A: INDEX OF EXHIBITS", ""];
   evidenceState.forEach((item) => {
     lines.push(
       `${item.exhibitLabel}\t${item.title || "Untitled exhibit"}${
@@ -306,18 +320,18 @@ function buildSection1Text() {
     : [];
   const userName = petitionSeed.customerEmail || "the self-petitioner";
   const chosenEvidence = evidenceState
-    .filter((item) => item.sectionFocus === "Section-1" || item.sectionFocus === "Section-3")
+    .filter((item) => item.sectionFocus === "Section-B" || item.sectionFocus === "Section-A")
     .map((item) => `${item.exhibitLabel} (${item.title || "Untitled exhibit"})`);
 
   return [
-    "SECTION 1",
+    "SECTION-B: PETITION SUMMARY PAGE",
     "",
     `This draft brief is prepared in support of the self-petition filed by ${userName}. It is intended as a working template for organizing the petition narrative, exhibit map, and evidence-backed argument structure before final legal review or polishing.`,
     "",
     "At this stage, the record supports the following preliminary themes:",
     ...pathways.map((pathway, index) => `${index + 1}. ${pathway.label}: ${pathway.summary}`),
     "",
-    "The following exhibits have currently been mapped into the opening section:",
+    "The following exhibits have currently been mapped into the summary page:",
     ...(chosenEvidence.length
       ? chosenEvidence.map((line) => `- ${line}`)
       : ["- User still needs to select supporting exhibits."]),
@@ -330,16 +344,12 @@ function buildSection2Text() {
   const pathways = Array.isArray(petitionSeed.reportSummary?.pathways)
     ? petitionSeed.reportSummary.pathways
     : [];
-  const groupedEvidence = pathways.map((pathway, index) => {
-    const sectionEvidence = evidenceState.filter(
-      (item) =>
-        item.sectionFocus === "Section-2" ||
-        (index === 1 && item.sectionFocus === "Section-1")
-    );
+  const groupedEvidence = pathways.map((pathway) => {
+    const sectionEvidence = evidenceState.filter((item) => item.sectionFocus === "Section-C");
     return { pathway, sectionEvidence };
   });
 
-  const sections = ["SECTION 2", ""];
+  const sections = ["SECTION-C: PETITION BODY", ""];
   groupedEvidence.forEach(({ pathway, sectionEvidence }, index) => {
     sections.push(`${index + 1}. ${pathway.label}`);
     sections.push(pathway.summary || "Add report-based reasoning here.");
@@ -386,6 +396,7 @@ function handleAttachmentInput(input) {
   if (!item) return;
   const file = input.files?.[0];
   item.attachmentName = file ? file.name : "No file selected";
+  item.attachmentProvided = Boolean(file);
   renderEvidenceList();
 }
 
@@ -409,7 +420,7 @@ function runLocalEvidenceValidation() {
     .map((item) => `${item.exhibitLabel} needs a clearer title or purpose statement.`);
 
   const attachmentWarnings = evidenceState
-    .filter((item) => item.attachmentName === "No file selected")
+    .filter((item) => !item.attachmentProvided)
     .map((item) => `${item.exhibitLabel} has no file attached yet.`);
 
   return {
@@ -419,6 +430,53 @@ function runLocalEvidenceValidation() {
       [...issues, ...attachmentWarnings].join(" ") ||
       "Current evidence rows look organized enough for drafting.",
     evidence_feedback: [...issues, ...attachmentWarnings],
+  };
+}
+
+function runLocalSingleEvidenceValidation(item) {
+  const warnings = [];
+  if (!item.title) warnings.push("Title is missing.");
+  if (!item.purpose) warnings.push("Reasoning is missing.");
+  if (!item.attachmentProvided) warnings.push("No attachment was provided.");
+
+  return {
+    action: "validate_single_evidence",
+    message: `${item.exhibitLabel} reviewed in demo mode.`,
+    validation_summary: warnings.length
+      ? warnings.join(" ")
+      : `${item.exhibitLabel} looks usable as a draft exhibit entry.`,
+    evidence_feedback: warnings,
+    updated_evidence_item: {
+      ...item,
+      strength: warnings.length ? "Needs Explanation" : "Strong",
+    },
+  };
+}
+
+function runLocalEvidenceReasoning(item) {
+  if (!item.attachmentProvided && !item.notes && !item.purpose) {
+    return {
+      action: "generate_evidence_reasoning",
+      message:
+        "This card needs an attachment or more context before reasoning can be generated.",
+      evidence_feedback: ["Attach a PDF/PNG or add notes/context first."],
+    };
+  }
+
+  return {
+    action: "generate_evidence_reasoning",
+    message: `${item.exhibitLabel} reasoning draft generated in demo mode.`,
+    updated_evidence_item: {
+      ...item,
+      purpose:
+        item.purpose ||
+        "This exhibit appears relevant to the petition record and should be tied to the applicant's qualifications, endeavor, or NIW prong support.",
+      notes:
+        item.notes ||
+        "AI draft note: review this exhibit for dates, authorship, and how it strengthens the petition narrative.",
+      sectionFocus: item.sectionFocus || "Section-C",
+      strength: item.attachmentProvided ? "Potentially Useful" : "Needs Explanation",
+    },
   };
 }
 
@@ -441,30 +499,36 @@ function runLocalCoherencyCheck() {
   };
 }
 
-function runLocalAction(action) {
+function runLocalAction(action, evidenceItem = null) {
   if (action === "generate_section_3") {
     return {
       action,
-      message: "Section-3 regenerated locally in demo mode.",
+      message: "Section-A regenerated locally in demo mode.",
       updated_section_3: buildSection3Text(),
     };
   }
   if (action === "generate_section_1") {
     return {
       action,
-      message: "Section-1 regenerated locally in demo mode.",
+      message: "Section-B regenerated locally in demo mode.",
       updated_section_1: buildSection1Text(),
     };
   }
   if (action === "generate_section_2") {
     return {
       action,
-      message: "Section-2 regenerated locally in demo mode.",
+      message: "Section-C regenerated locally in demo mode.",
       updated_section_2: buildSection2Text(),
     };
   }
   if (action === "validate_evidence") {
     return runLocalEvidenceValidation();
+  }
+  if (action === "validate_single_evidence" && evidenceItem) {
+    return runLocalSingleEvidenceValidation(evidenceItem);
+  }
+  if (action === "generate_evidence_reasoning" && evidenceItem) {
+    return runLocalEvidenceReasoning(evidenceItem);
   }
   if (action === "coherency_check") {
     return runLocalCoherencyCheck();
@@ -477,6 +541,15 @@ function runLocalAction(action) {
 
 function applyActionResult(result) {
   if (!result) return;
+
+  if (result.updated_evidence_item?.id) {
+    evidenceState = evidenceState.map((item) =>
+      item.id === result.updated_evidence_item.id
+        ? { ...item, ...result.updated_evidence_item }
+        : item
+    );
+    renderEvidenceList();
+  }
 
   const section1 = document.getElementById("section1Text");
   const section2 = document.getElementById("section2Text");
@@ -506,17 +579,26 @@ function applyActionResult(result) {
   setStatus("evidenceStatus", messageParts.join(" "));
 }
 
+function updateCollapseIcon(button, isHidden) {
+  const icon = button?.querySelector("i");
+  if (icon) {
+    icon.className = isHidden ? "bi bi-chevron-down" : "bi bi-chevron-up";
+  }
+}
+
 function toggleSection(targetId, button) {
   const body = document.getElementById(targetId);
   if (!body) return;
-  const head = body.previousElementSibling;
+  const card = button?.closest(".petition-card, .petition-stage");
+  const header = button?.closest(".petition-stage-head");
   const isHidden = body.classList.toggle("hidden");
-  if (head) {
-    head.classList.toggle("is-collapsed", isHidden);
+  if (header) {
+    header.classList.toggle("is-collapsed", isHidden);
   }
-  if (button) {
-    button.textContent = isHidden ? "Expand" : "Collapse";
+  if (card) {
+    card.classList.toggle("is-collapsed", isHidden);
   }
+  updateCollapseIcon(button, isHidden);
 }
 
 async function fetchUserState() {
@@ -527,9 +609,7 @@ async function fetchUserState() {
   }
 
   try {
-    const response = await fetch(
-      `${getApiBaseUrl()}/petition/user-state/${petitionDataId}`
-    );
+    const response = await fetch(`${getApiBaseUrl()}/petition/user-state/${petitionDataId}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch petition user state: ${response.status}`);
     }
@@ -543,6 +623,7 @@ async function fetchUserState() {
     backendAiReady = true;
     setTokenDisplay(tokenBalance, "Backend AI Ready");
     refreshButtonLabels();
+    renderEvidenceList();
   } catch (error) {
     console.error("Petition token fetch failed:", error);
     backendAiReady = false;
@@ -554,7 +635,7 @@ async function fetchUserState() {
   }
 }
 
-async function callBackendAction(action) {
+async function callBackendAction(action, evidenceItem = null) {
   const response = await fetch(`${getApiBaseUrl()}/petition/ai-action`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -562,7 +643,7 @@ async function callBackendAction(action) {
       rB: parseInt(petitionDataId, 10),
       action,
       report_summary: petitionSeed.reportSummary || {},
-      evidence_items: evidenceState,
+      evidence_items: evidenceItem ? [evidenceItem] : evidenceState,
       section_texts: getSectionTexts(),
       packet_notes: document.getElementById("packetNotes")?.value || "",
     }),
@@ -577,7 +658,7 @@ async function callBackendAction(action) {
   return data.result;
 }
 
-async function runAiAction(action) {
+async function runAiAction(action, evidenceItem = null) {
   const actionCost = getActionCost(action);
   if (aiBusy) return;
 
@@ -586,8 +667,8 @@ async function runAiAction(action) {
     setStatus("evidenceStatus", `Running ${action.replaceAll("_", " ")}...`);
 
     const result = backendAiReady
-      ? await callBackendAction(action)
-      : runLocalAction(action);
+      ? await callBackendAction(action, evidenceItem)
+      : runLocalAction(action, evidenceItem);
 
     if (!backendAiReady) {
       setTokenDisplay(null, "Demo Mode");
@@ -626,7 +707,7 @@ function bindEvidenceEditor() {
   document.getElementById("addEvidenceBtn")?.addEventListener("click", () => {
     evidenceState.push(
       makeEvidenceItem({
-        sectionFocus: "Section-3",
+        sectionFocus: "Section-A",
         strength: "User Added",
       })
     );
@@ -639,7 +720,7 @@ function bindEvidenceEditor() {
       makeEvidenceItem({
         title: "Custom exhibit",
         purpose: "User-added evidence outside the seeded report suggestions.",
-        sectionFocus: "Section-2",
+        sectionFocus: "Section-C",
         strength: "User Added",
       })
     );
@@ -649,13 +730,7 @@ function bindEvidenceEditor() {
 
   document.getElementById("evidenceList")?.addEventListener("input", (event) => {
     const target = event.target;
-    if (
-      !(
-        target instanceof HTMLInputElement ||
-        target instanceof HTMLTextAreaElement ||
-        target instanceof HTMLSelectElement
-      )
-    ) {
+    if (!(target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement)) {
       return;
     }
     if (target.dataset.field) {
@@ -667,28 +742,42 @@ function bindEvidenceEditor() {
     const target = event.target;
     if (target instanceof HTMLInputElement && target.dataset.action === "attachment") {
       handleAttachmentInput(target);
-      return;
-    }
-    if (
-      target instanceof HTMLInputElement ||
-      target instanceof HTMLTextAreaElement ||
-      target instanceof HTMLSelectElement
-    ) {
-      if (target.dataset.field) {
-        updateField(target);
-      }
     }
   });
 
   document.getElementById("evidenceList")?.addEventListener("click", (event) => {
     const target = event.target;
     if (!(target instanceof HTMLElement)) return;
-    if (target.dataset.action !== "delete-evidence") return;
+
+    const action = target.dataset.action || target.closest("[data-action]")?.dataset.action;
+    if (!action) return;
+
     const item = findEvidenceItem(target);
+    if (action === "delete-evidence") {
+      if (!item) return;
+      evidenceState = evidenceState.filter((entry) => entry.id !== item.id);
+      renderEvidenceList();
+      setStatus("evidenceStatus", `${item.exhibitLabel} was removed.`);
+      return;
+    }
+
     if (!item) return;
-    evidenceState = evidenceState.filter((entry) => entry.id !== item.id);
-    renderEvidenceList();
-    setStatus("evidenceStatus", `${item.exhibitLabel} was removed.`);
+
+    if (action === "validate-single-evidence") {
+      runAiAction("validate_single_evidence", item);
+      return;
+    }
+
+    if (action === "generate-evidence-reasoning") {
+      if (!item.attachmentProvided && !item.notes && !item.purpose) {
+        setStatus(
+          "evidenceStatus",
+          "Add an attachment or more context to that evidence card before generating reasoning."
+        );
+        return;
+      }
+      runAiAction("generate_evidence_reasoning", item);
+    }
   });
 }
 

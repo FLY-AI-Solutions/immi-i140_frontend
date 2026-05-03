@@ -423,29 +423,29 @@ async function emailReportLink() {
   }
 }
 
-function openPetitionTemplate() {
-  if (!activeSummary) {
-    showToast("The report summary is still loading. Please try again in a moment.", "info", 4500);
+function openPetitionConstructionModal() {
+  const modal = document.getElementById("petitionConstructionModal");
+  if (!modal) {
+    showToast("This page is being constructed. Please check back later.", "info", 4500);
     return;
   }
 
-  const seedPayload = {
-    referenceId: activeReferenceId || "",
-    customerEmail: activeCustomerEmail || "",
-    generatedAt: new Date().toISOString(),
-    reportSummary: activeSummary,
-  };
+  modal.classList.add("is-open");
+  modal.setAttribute("aria-hidden", "false");
+  modal
+    .querySelector("button[data-construction-close]")
+    ?.focus({ preventScroll: true });
+}
 
-  sessionStorage.setItem(
-    "petitionTemplateSeed",
-    JSON.stringify(seedPayload)
-  );
+function closePetitionConstructionModal() {
+  const modal = document.getElementById("petitionConstructionModal");
+  if (!modal) return;
 
-  const nextUrl = new URL("../petition/petition_template_form.html", window.location.href);
-  if (activeReferenceId) {
-    nextUrl.searchParams.set("rB", activeReferenceId);
-  }
-  window.location.href = nextUrl.toString();
+  modal.classList.remove("is-open");
+  modal.setAttribute("aria-hidden", "true");
+  document
+    .getElementById("openPetitionTemplateBtn")
+    ?.focus({ preventScroll: true });
 }
 
 async function initialize() {
@@ -555,6 +555,16 @@ document.addEventListener("DOMContentLoaded", () => {
     ?.closest("button");
   const petitionButton = document.getElementById("openPetitionTemplateBtn");
   printButton?.addEventListener("click", printReport);
-  petitionButton?.addEventListener("click", openPetitionTemplate);
+  petitionButton?.addEventListener("click", openPetitionConstructionModal);
+  document
+    .querySelectorAll("[data-construction-close]")
+    .forEach((element) =>
+      element.addEventListener("click", closePetitionConstructionModal)
+    );
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closePetitionConstructionModal();
+    }
+  });
   initialize();
 });

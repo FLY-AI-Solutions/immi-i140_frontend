@@ -465,8 +465,14 @@ async function initialize() {
       return;
     }
 
+    const sessionStatusUrl = new URL(`${apiBaseUrl}/session-status`);
+    sessionStatusUrl.searchParams.set("session_id", sessionId);
+    if (rB) {
+      sessionStatusUrl.searchParams.set("rB", rB);
+    }
+
     const response = await fetch(
-      `${apiBaseUrl}/session-status?session_id=${sessionId}`,
+      sessionStatusUrl.toString(),
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },

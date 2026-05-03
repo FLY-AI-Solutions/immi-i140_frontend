@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Exo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
 
@@ -26,6 +26,11 @@
         --text-secondary: #525252; /* Softer gray for paragraphs */
         --background-light: #fbfbfb; /* Very light, clean background */
         --border-color: #eaeaea; /* Subtle border color */
+        --surface-warm: #f8f4ee;
+        --accent-blue: #5f7fa8;
+        --accent-green: #5f8c72;
+        --accent-amber: #b58a35;
+        --accent-red: #b35d5d;
       }
 
       body {
@@ -73,8 +78,10 @@
 
       /* Hero Section */
       .hero-section {
+        font-family: "Exo", "Inter", sans-serif;
         padding: 6rem 1rem;
         text-align: center;
+        background: linear-gradient(180deg, #ffffff 0%, #fbfbfb 100%);
       }
 
       .hero-content {
@@ -123,8 +130,8 @@
       /* Features Section */
       .features-section {
         padding: 4rem 1rem;
-        background-color: #ffffff;
-        border-top: 1px solid var(--border-color);
+        background: linear-gradient(180deg, #fffdf9 0%, #ffffff 100%);
+        border-top: 1px solid rgba(185, 176, 162, 0.24);
         border-bottom: 1px solid var(--border-color);
       }
 
@@ -154,6 +161,264 @@
       }
       .feature-item small {
         color: var(--text-secondary);
+      }
+
+      .demo-report-section {
+        padding: 5rem 1rem;
+        background:
+          radial-gradient(circle at top left, rgba(185, 176, 162, 0.2), transparent 30%),
+          radial-gradient(circle at bottom right, rgba(95, 127, 168, 0.08), transparent 32%),
+          linear-gradient(180deg, #fbfbfb 0%, #f5f1ea 46%, #fffdf9 100%);
+      }
+
+      .section-kicker {
+        color: #7d7263;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.78rem;
+      }
+
+      .section-title {
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: var(--dark-charcoal);
+      }
+
+      .section-copy {
+        color: var(--text-secondary);
+        line-height: 1.7;
+      }
+
+      .report-preview-shell {
+        border: 1px solid rgba(185, 176, 162, 0.45);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 0 24px 60px rgba(28, 28, 28, 0.12);
+        overflow: hidden;
+      }
+
+      .report-preview-header {
+        position: relative;
+        padding: 1.4rem 1.5rem;
+        background: linear-gradient(135deg, #f7f4ef 0%, #ece5d9 100%);
+        border-bottom: 1px solid rgba(185, 176, 162, 0.45);
+      }
+
+      .report-preview-header::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at top right, rgba(185, 176, 162, 0.22), transparent 45%);
+      }
+
+      .report-preview-eyebrow,
+      .report-preview-title,
+      .report-preview-meta {
+        position: relative;
+        z-index: 1;
+      }
+
+      .report-preview-eyebrow {
+        color: #7d7263;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+
+      .report-preview-title {
+        margin: 0.45rem 0 0.3rem;
+        font-size: clamp(1.5rem, 3vw, 2rem);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+      }
+
+      .report-preview-meta {
+        color: #5b5b5b;
+        font-size: 0.92rem;
+      }
+
+      .report-preview-body {
+        padding: 1.25rem;
+      }
+
+      .preview-pathway {
+        border: 1px solid #e3ddd2;
+        border-left: 6px solid #7d7263;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 0.9rem;
+        background: #ffffff;
+      }
+
+      .preview-pathway:last-child {
+        margin-bottom: 0;
+      }
+
+      .preview-pathway-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: flex-start;
+        margin-bottom: 0.55rem;
+      }
+
+      .preview-pathway-label {
+        font-weight: 800;
+        color: #2f2b28;
+      }
+
+      .preview-pathway-status {
+        color: #6d6457;
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        white-space: nowrap;
+      }
+
+      .preview-pathway p,
+      .preview-pathway ul {
+        color: var(--text-secondary);
+        margin-bottom: 0;
+        font-size: 0.92rem;
+        line-height: 1.65;
+      }
+
+      .preview-pathway ul {
+        padding-left: 1.1rem;
+      }
+
+      .preview-pathway li + li {
+        margin-top: 0.35rem;
+      }
+
+      .preview-amber {
+        border-left-color: var(--accent-amber);
+      }
+
+      .preview-green {
+        border-left-color: var(--accent-green);
+      }
+
+      .preview-red {
+        border-left-color: var(--accent-red);
+      }
+
+      .preview-blue {
+        border-left-color: var(--accent-blue);
+      }
+
+      .report-proof-list {
+        display: grid;
+        gap: 0.8rem;
+        margin: 1.5rem 0 2rem;
+      }
+
+      .report-proof-item {
+        display: flex;
+        gap: 0.8rem;
+        align-items: flex-start;
+      }
+
+      .report-proof-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 34px;
+        background: var(--dark-charcoal);
+        color: #fff;
+        font-size: 0.82rem;
+        font-weight: 800;
+      }
+
+      .report-proof-item strong {
+        display: block;
+        color: var(--dark-charcoal);
+      }
+
+      .report-proof-item span {
+        color: var(--text-secondary);
+        font-size: 0.92rem;
+      }
+
+      .feedback-section {
+        padding: 4.5rem 1rem;
+        background: linear-gradient(180deg, #ffffff 0%, #fbfbfb 100%);
+        border-top: 1px solid rgba(185, 176, 162, 0.2);
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .rating-summary {
+        border: 1px solid rgba(185, 176, 162, 0.42);
+        border-radius: 16px;
+        background: linear-gradient(135deg, #f9f6f0, #ffffff);
+        padding: 1.35rem;
+        height: 100%;
+      }
+
+      .rating-number {
+        font-size: 3rem;
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: -0.05em;
+        color: var(--dark-charcoal);
+      }
+
+      .stars {
+        color: #b58a35;
+        letter-spacing: 0.08em;
+        font-size: 1.05rem;
+      }
+
+      .feedback-card {
+        height: 100%;
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 1.25rem;
+        background: var(--background-light);
+        box-shadow: 0 12px 30px rgba(28, 28, 28, 0.05);
+      }
+
+      .feedback-card p {
+        color: var(--text-secondary);
+        line-height: 1.65;
+      }
+
+      .feedback-name {
+        color: var(--dark-charcoal);
+        font-weight: 800;
+      }
+
+      .landing-cta-band {
+        margin-top: 2rem;
+        border-radius: 18px;
+        padding: 1.5rem;
+        background: var(--dark-charcoal);
+        color: #ffffff;
+      }
+
+      .landing-cta-band p {
+        color: rgba(255, 255, 255, 0.72);
+      }
+
+      @media (max-width: 768px) {
+        .hero-section {
+          padding: 4rem 1rem;
+        }
+
+        .preview-pathway-head {
+          flex-direction: column;
+          gap: 0.3rem;
+        }
+
+        .preview-pathway-status {
+          white-space: normal;
+        }
       }
 
       /* Footer */
@@ -202,7 +467,7 @@
 </script>
   <body>
     <header class="header-nav">
-      <div class="container d-flex justify-content-between align-items: center">
+      <div class="container d-flex justify-content-between align-items-center">
         <a class="navbar-brand" href="#">
           <img src="../../assets/images/immigenius-logo.png" alt="ImmI-GeniUS Logo" />
         </a>
@@ -228,6 +493,130 @@
         </div>
       </section>
 
+      <section class="demo-report-section">
+        <div class="container">
+          <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+              <div class="report-preview-shell">
+                <div class="report-preview-header">
+                  <div class="report-preview-eyebrow">
+                    Immigenius by FlyAI Solutions
+                  </div>
+                  <h3 class="report-preview-title">NIW Eligibility Report</h3>
+                  <div class="report-preview-meta">
+                    Sample Reference ID: #13
+                  </div>
+                </div>
+                <div class="report-preview-body">
+                  <h4 class="mb-3 fw-bold">NIW Readiness Summary</h4>
+                  <article class="preview-pathway preview-amber">
+                    <div class="preview-pathway-head">
+                      <div class="preview-pathway-label">
+                        Prong 1: Substantial Merit & National Importance
+                      </div>
+                      <div class="preview-pathway-status">Promising</div>
+                    </div>
+                    <p>
+                      Advanced ML for optimizing renewable energy grids aligns
+                      with U.S. priorities in decarbonization, grid reliability,
+                      and energy security. The report highlights both the
+                      national-interest framing and evidence that still needs to
+                      be cleaned up.
+                    </p>
+                  </article>
+                  <article class="preview-pathway preview-amber">
+                    <div class="preview-pathway-head">
+                      <div class="preview-pathway-label">
+                        Prong 2: Well Positioned to Advance the Endeavor
+                      </div>
+                      <div class="preview-pathway-status">Mixed</div>
+                    </div>
+                    <p>
+                      The report weighs citations, publications, awards, patents,
+                      domain relevance, U.S. collaborations, and documentation
+                      consistency to show where the applicant is strong and where
+                      positioning needs more proof.
+                    </p>
+                  </article>
+                  <article class="preview-pathway preview-green">
+                    <div class="preview-pathway-head">
+                      <div class="preview-pathway-label">Key Strengths</div>
+                      <div class="preview-pathway-status">Highlights</div>
+                    </div>
+                    <ul>
+                      <li>Endeavor aligned with U.S. clean-energy priorities</li>
+                      <li>Research uptake shown through citations and venue activity</li>
+                      <li>Evidence of peer recognition and innovation indicators</li>
+                    </ul>
+                  </article>
+                  <article class="preview-pathway preview-red">
+                    <div class="preview-pathway-head">
+                      <div class="preview-pathway-label">Weak Points / Risks</div>
+                      <div class="preview-pathway-status">Fixes Required</div>
+                    </div>
+                    <ul>
+                      <li>Credential inconsistencies and future-dated evidence</li>
+                      <li>Limited proof of U.S. collaborations or traction</li>
+                      <li>Placeholder profile links and unsupported media claims</li>
+                    </ul>
+                  </article>
+                  <article class="preview-pathway preview-blue">
+                    <div class="preview-pathway-head">
+                      <div class="preview-pathway-label">Recommended Next Steps</div>
+                      <div class="preview-pathway-status">Action Plan</div>
+                    </div>
+                    <p>
+                      The report recommends reconciling credentials, building
+                      domain-specific proof, securing independent expert letters,
+                      and preparing a clean exhibit set before petition drafting.
+                    </p>
+                  </article>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-5">
+              <div class="section-kicker mb-2">Example Output</div>
+              <h2 class="section-title mb-3">
+                See the kind of report customers receive after checkout
+              </h2>
+              <p class="section-copy mb-0">
+                The final report translates a professional profile into a
+                Dhanasar-style NIW readiness summary, showing strengths, risks,
+                and a practical action plan. This gives applicants a clearer
+                view of what to fix before investing more time in petition
+                preparation.
+              </p>
+              <div class="report-proof-list">
+                <div class="report-proof-item">
+                  <span class="report-proof-icon">1</span>
+                  <div>
+                    <strong>Three-prong evaluation</strong>
+                    <span>Substantial merit, positioning, and waiver balance.</span>
+                  </div>
+                </div>
+                <div class="report-proof-item">
+                  <span class="report-proof-icon">2</span>
+                  <div>
+                    <strong>Evidence-aware weaknesses</strong>
+                    <span>Flags missing proof, date conflicts, and credibility gaps.</span>
+                  </div>
+                </div>
+                <div class="report-proof-item">
+                  <span class="report-proof-icon">3</span>
+                  <div>
+                    <strong>Next-step roadmap</strong>
+                    <span>Concrete recommendations for improving the record.</span>
+                  </div>
+                </div>
+              </div>
+              <a href="../intake/portfolio.html" class="btn btn-hero">
+                Create My Report
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="features-section">
         <div class="container">
           <h2>A Comprehensive AI-Powered Analysis</h2>
@@ -239,8 +628,8 @@
                 >
                 <small
                   >Advanced analysis of the three
-                  <em>Matter of Dhanasar</em> prongs—substantial merit/national
-                  importance, well-positionedness, and U.S. interest—customized
+                  <em>Matter of Dhanasar</em> prongs: substantial merit/national
+                  importance, well-positionedness, and U.S. interest, customized
                   to your unique profile for unmatched clarity.</small
                 >
               </div>
@@ -262,7 +651,7 @@
                 <small
                   >Precise assessment of your "well-positioned" status,
                   including approval probability insights and a clear breakdown
-                  of your profile’s strengths and areas for improvement.</small
+                  of your profile's strengths and areas for improvement.</small
                 >
               </div>
               <div class="feature-item">
@@ -275,6 +664,74 @@
                   letter of support templates, timeline guidance, and proven
                   tactics to enhance your approval odds by up to 40%.</small
                 >
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="feedback-section">
+        <div class="container">
+          <div class="row align-items-stretch g-4">
+            <div class="col-lg-4">
+              <div class="rating-summary">
+                <div class="section-kicker mb-2">Customer Feedbacks & Ratings</div>
+                <div class="rating-number">4.8</div>
+                <div class="stars mb-2">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <p class="section-copy mb-0">
+                  Applicants use ImmI-GeniUS to understand their profile,
+                  organize evidence, and spot avoidable weaknesses before moving
+                  into deeper petition preparation.
+                </p>
+              </div>
+            </div>
+            <div class="col-lg-8">
+              <div class="row g-4">
+                <div class="col-md-4">
+                  <div class="feedback-card">
+                    <div class="stars mb-2">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p>
+                      "The prong-by-prong report made it obvious which evidence
+                      I needed to fix first."
+                    </p>
+                    <div class="feedback-name">Research Scientist</div>
+                    <small class="text-secondary">Energy systems profile</small>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="feedback-card">
+                    <div class="stars mb-2">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p>
+                      "I liked that it did not just praise my CV. It pointed out
+                      the weak areas and gave a practical next-step list."
+                    </p>
+                    <div class="feedback-name">Ph.D. Applicant</div>
+                    <small class="text-secondary">AI and data science</small>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="feedback-card">
+                    <div class="stars mb-2">&#9733;&#9733;&#9733;&#9733;&#9734;</div>
+                    <p>
+                      "The sample structure helped me understand how to connect
+                      awards, publications, projects, and future endeavor."
+                    </p>
+                    <div class="feedback-name">Founder</div>
+                    <small class="text-secondary">Health technology</small>
+                  </div>
+                </div>
+              </div>
+              <div class="landing-cta-band d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                <div>
+                  <h3 class="h4 fw-bold mb-1">Ready to see your NIW readiness?</h3>
+                  <p class="mb-0">
+                    Complete the portfolio intake and receive a structured AI
+                    evaluation before deciding your next petition move.
+                  </p>
+                </div>
+                <a href="../intake/portfolio.html" class="btn btn-light fw-bold">
+                  Start Evaluation
+                </a>
               </div>
             </div>
           </div>

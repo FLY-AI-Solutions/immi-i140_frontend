@@ -1,0 +1,668 @@
+import React, { useState } from 'react';
+
+// --- Icons ---
+const CheckCircle = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>;
+const Sparkles = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L12 3Z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg>;
+const Download = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>;
+const Info = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>;
+const ChevronRight = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>;
+const Trash2 = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>;
+const UploadCloud = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v9"></path><path d="m16 16-4-4-4 4"></path></svg>;
+const Paperclip = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>;
+const Lock = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>;
+const CreditCard = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>;
+const Shield = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>;
+
+// --- Simulated AI Data (Loaded via .flyai) ---
+const AI_EXTRACTED_EXHIBITS = [
+  { id: 1, title: "Dr. Nasef’s CV", attachedFile: null },
+  { id: 2, title: "Evidence of Dr. Nasef’s educational credentials which confirm he has earned an advanced degree", attachedFile: null },
+  { id: 3, title: "Dr. Nasef’s personal statement", attachedFile: null },
+  { id: 4, title: "Documentary evidence demonstrating the substantial merit and national importance of the proposed endeavor", attachedFile: null },
+  { id: 5, title: "Department of Homeland Security’s STEM Degree List and documentary evidence from the National Science Board", attachedFile: null },
+  { id: 6, title: "Evidence of Dr. Nasef’s employment at University of California, Merced", attachedFile: null },
+  { id: 7, title: "Evidence of Dr. Nasef’s journal and conference publications, including funding acknowledgements", attachedFile: null },
+  { id: 8, title: "Information showing the prestige of the journals in which Dr. Nasef’s work is published", attachedFile: null },
+  { id: 9, title: "Dr. Nasef’s Google Scholar citation record", attachedFile: null },
+  { id: 10, title: "InCites Essential Science Indicators citation percentiles showing that Dr. Nasef’s publications have been highly cited in the field", attachedFile: null },
+  { id: 11, title: "Testimonial letter confirming Dr. Nasef’s contributions to research funded by the U.S. National Science Foundation (NSF)", attachedFile: null },
+  { id: 12, title: "Evidence of Dr. Nasef’s peer review work", attachedFile: null },
+  { id: 13, title: "Recommendation letters confirming Dr. Nasef’s expertise and research contributions", attachedFile: null }
+];
+
+const AI_EXTRACTED_INTRO = `This brief is submitted in support of a Form I-140 self-petitioned by Ziad Nasef. Dr. Nasef seeks to qualify as a member of the professions holding an advanced degree and additionally requests a national interest waiver of the job offer requirement. This brief will discuss the evidence submitted in support of this petition and contextualize that evidence within the NIW’s legal framework as established in Matter of Dhanasar (26 I&N Dec. 884 (AAO 2016)). 
+
+The evidence submitted with this brief will prove the following: 
+I. Dr. Nasef has been awarded a Doctor of Philosophy in Mechanical Engineering and is therefore a member of the professions holding an advanced degree;
+II. Dr. Nasef proposes to develop and deploy a fuel-flexible digital-twin and machine-learning framework for biomass thermochemical conversion... an endeavor with both substantial merit and national importance;
+III. Dr. Nasef is well positioned to advance the proposed endeavor; and
+IV. On balance, it would be beneficial for the United States to waive the requirements of a job offer and thus of a labor certification.`;
+
+const AI_EXTRACTED_PRONG1 = `Dr. Nasef has earned an advanced degree related to the proposed endeavor: Doctor of Philosophy in Mechanical Engineering (2025) from University of California. As evidence of this educational achievement, we are submitting copies of Dr. Nasef’s diploma and academic transcripts. (Exhibit 2).
+
+The submitted evidence proves that Dr. Nasef is a member of the professions holding an advanced degree and therefore satisfies this requirement.`;
+
+const AI_EXTRACTED_PRONG2 = `Dr. Nasef is an expert in the field of mechanical engineering. His proposed endeavor is to develop and deploy a fuel-flexible digital-twin and machine-learning framework for biomass thermochemical conversion designed to evaluate how biomass conversion systems perform when fuel properties change and enable more reliable and cost-effective use of domestic biomass and waste resources. In particular, he plans to further his proposed endeavor by developing computational pyrolysis models, identifying parameters to enhance biochar adsorption capacity, and creating new technologies for biomass pyrolyzers to reduce greenhouse gas emissions and support biomass-based energy consumption. (Exhibit 3).
+
+Dr. Nasef’s proposed endeavor clearly has substantial merit due to its focus on optimizing biofuel production techniques to facilitate sustainable energy generation and advance global energy security. Such research is critical given the need to address rising energy demands caused by global population growth, as well as the pressing issues regarding fossil fuels. (Exhibit 4).
+
+Dr. Nasef’s proposed endeavor is also nationally important for addressing the nation’s energy goals, including advancing sustainable production and improving energy security. Further development of renewable fuel is necessary to combat shrinking fossil fuel reserves, and one avenue of inquiry is bioenergy technologies such as biofuel conversion. The federal government houses several initiatives dedicated to such research, such as the Department of Energy Bioenergy Technologies Office (BETO)... (Exhibit 4).`;
+
+const AI_EXTRACTED_PRONG3 = `Dr. Nasef has established himself as a leader in this area through his integration of thermoelectric generator plates in pyrolysis reactors for waste-heat recovery and power generation, as well as his development of non-noble metal catalysts for energy conversion technologies. (Exhibit 3).
+
+He has earned three degrees related to his field of expertise, culminating in a Ph.D. in Mechanical Engineering from the University of California. Dr. Nasef currently holds a research position in the Department of Mechanical and Aerospace Engineering at University of California, Merced. (Exhibit 6).
+
+Dr. Nasef has been publishing his work since 2021, and his research in the field of mechanical engineering has resulted in an extensive publication record in renowned scientific journals including Bioresource Technology and Dalton Transactions. (Exhibits 7, 8). His published research has gone on to be highly impactful, resulting in 116 citations to his work to date. (Exhibit 9).
+
+The relevance of Dr. Nasef’s research to national research objectives and interests in mechanical engineering is also demonstrated by the funding his work has received from the USDA, DOE, NASA, and NSF. (Exhibits 7, 11). Furthermore, he has been selected to perform peer review professional service by the editors of various peer-reviewed journals. (Exhibit 12).`;
+
+const AI_EXTRACTED_PRONG4 = `The evidence submitted with this brief demonstrates that Dr. Nasef possesses considerable experience and expertise in the field of mechanical engineering. The submitted evidence shows that such work is valuable because it optimizes biomass pyrolysis to reduce greenhouse gas emissions and advance global energy security. (Exhibit 4).
+
+In addition, Dr. Nasef’s past work has been highly successful, as it has been implemented and recognized by other researchers, journal editors, professional organizations, and government agencies. (Exhibits 7-12).
+
+Because of this record of successful work in an area that furthers U.S. interests, Dr. Nasef offers contributions of such value that, on balance, he would benefit the U.S. even assuming that other qualified U.S. workers are available.`;
+
+export default function App() {
+  const [activeStep, setActiveStep] = useState(1);
+  
+  // Starting with empty states for self-filers until .flyai is processed
+  const [exhibits, setExhibits] = useState([]);
+  const [intro, setIntro] = useState('');
+  const [prong1, setProng1] = useState('');
+  const [prong2, setProng2] = useState('');
+  const [prong3, setProng3] = useState('');
+  const [prong4, setProng4] = useState('');
+  
+  // AI Flow & Payment States
+  const [flyaiFile, setFlyaiFile] = useState(null);
+  const [paymentStatus, setPaymentStatus] = useState('idle'); // 'idle', 'requires_payment', 'processing_payment', 'success'
+  const [isProcessingFlyai, setIsProcessingFlyai] = useState(false);
+  const [isAgentPopulated, setIsAgentPopulated] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  
+  const [toastMsg, setToastMsg] = useState('');
+
+  const steps = [
+    { id: 1, title: "Index of Exhibits", desc: "Upload .flyai & attach evidence" },
+    { id: 2, title: "Introduction", desc: "Summary of your petition" },
+    { id: 3, title: "Legal Arguments", desc: "Matter of Dhanasar Prongs" },
+    { id: 4, title: "Final Review", desc: "Preview and export" }
+  ];
+
+  const handleFlyaiUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFlyaiFile(file);
+      // Instead of processing immediately, trigger the payment flow
+      setPaymentStatus('requires_payment');
+    }
+  };
+
+  const handleStripePayment = async () => {
+    setPaymentStatus('processing_payment');
+    
+    try {
+      // Integration with the backend `main.py` endpoint
+      // const response = await fetch('http://localhost:9000/create-checkout-session', { method: 'POST' });
+      // const session = await response.json();
+      // window.location.href = session.url; // Redirect to Stripe
+      
+      // Fallback simulation for live preview
+      setTimeout(() => {
+        setPaymentStatus('success');
+        showToast('💳 Payment successful! AI Agent is now drafting...');
+        startAiProcessing();
+      }, 2000);
+    } catch (error) {
+      showToast('❌ Error connecting to payment server.');
+      setPaymentStatus('requires_payment');
+    }
+  };
+
+  const startAiProcessing = () => {
+    setIsProcessingFlyai(true);
+    
+    // Simulating API Call to the AI Agent
+    setTimeout(() => {
+      setExhibits(AI_EXTRACTED_EXHIBITS);
+      setIntro(AI_EXTRACTED_INTRO);
+      setProng1(AI_EXTRACTED_PRONG1);
+      setProng2(AI_EXTRACTED_PRONG2);
+      setProng3(AI_EXTRACTED_PRONG3);
+      setProng4(AI_EXTRACTED_PRONG4);
+      
+      setIsProcessingFlyai(false);
+      setIsAgentPopulated(true);
+      showToast('✨ AI Agent successfully processed your .flyai profile and drafted your petition.');
+    }, 3000);
+  };
+
+  const handleExhibitAttachment = (index, e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const newExhibits = [...exhibits];
+      newExhibits[index].attachedFile = file;
+      setExhibits(newExhibits);
+      showToast(`Attached ${file.name} to Exhibit ${index + 1}`);
+    }
+  };
+
+  const handleSimulateAI = (sectionName) => {
+    setIsGenerating(true);
+    setTimeout(() => {
+      setIsGenerating(false);
+      showToast(`✨ AI Agent has successfully polished the ${sectionName} section.`);
+    }, 1500);
+  };
+
+  const showToast = (msg) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(''), 4000);
+  };
+
+  const addExhibit = () => {
+    setExhibits([...exhibits, { id: exhibits.length + 1, title: "", attachedFile: null }]);
+  };
+
+  const updateExhibit = (index, value) => {
+    const newExhibits = [...exhibits];
+    newExhibits[index].title = value;
+    setExhibits(newExhibits);
+  };
+
+  const removeExhibit = (index) => {
+    const newExhibits = exhibits.filter((_, i) => i !== index);
+    setExhibits(newExhibits);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
+      {/* Top Navbar */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold">N</div>
+            <h1 className="text-xl font-bold text-slate-800 tracking-tight">NIW Pro Se Builder</h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-slate-500 hidden md:block">Case: Ziad Nasef</span>
+            <button onClick={() => showToast('Draft saved successfully!')} className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+              Save Draft
+            </button>
+            <button onClick={() => setActiveStep(4)} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors flex items-center gap-2">
+              <Download /> Export PDF
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col md:flex-row gap-8">
+        
+        {/* Left Sidebar Navigation */}
+        <aside className="w-full md:w-64 flex-shrink-0">
+          <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 px-2">Drafting Workflow</h2>
+            <div className="space-y-1">
+              {steps.map((step) => (
+                <button
+                  key={step.id}
+                  onClick={() => setActiveStep(step.id)}
+                  className={`w-full text-left flex items-start gap-3 p-3 rounded-xl transition-all ${
+                    activeStep === step.id 
+                      ? 'bg-blue-50 border border-blue-100 shadow-sm' 
+                      : 'hover:bg-slate-50 border border-transparent'
+                  }`}
+                >
+                  <div className={`mt-0.5 flex-shrink-0 ${activeStep === step.id ? 'text-blue-600' : 'text-slate-400'}`}>
+                    {activeStep > step.id ? <CheckCircle /> : <div className="w-[18px] h-[18px] rounded-full border-2 border-current flex items-center justify-center text-[10px] font-bold">{step.id}</div>}
+                  </div>
+                  <div>
+                    <div className={`font-semibold text-sm ${activeStep === step.id ? 'text-blue-900' : 'text-slate-700'}`}>
+                      {step.title}
+                    </div>
+                    <div className="text-xs text-slate-500 mt-0.5">{step.desc}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+            
+            <div className="mt-8 p-4 bg-amber-50 rounded-xl border border-amber-100">
+              <div className="flex items-center gap-2 text-amber-800 font-semibold text-sm mb-2">
+                <Sparkles /> AI Agents
+              </div>
+              <p className="text-xs text-amber-700 leading-relaxed">
+                Upload your `.flyai` profile in the Exhibits tab. For a one-time fee, our AI Agent will read your profile and automatically draft your exhibits list, introduction, and legal arguments.
+              </p>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Content Area */}
+        <main className="flex-1 min-w-0">
+          
+          {/* STEP 1: EXHIBITS */}
+          {activeStep === 1 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-slate-100 bg-slate-50/50">
+                  <h2 className="text-2xl font-bold text-slate-800">Index of Exhibits</h2>
+                  <p className="text-slate-500 mt-1 text-sm">Organize the documents you will submit to USCIS. Upload your AI profile to automatically generate your list.</p>
+                </div>
+                
+                <div className="p-6">
+                  
+                  {/* Dynamic Top Zone: Upload -> Payment -> Loading AI -> Success */}
+                  <div className={`mb-8 p-8 border-2 ${paymentStatus === 'idle' && !flyaiFile ? 'border-dashed border-indigo-200 bg-indigo-50/50' : 'border-solid border-slate-100 bg-slate-50'} rounded-xl flex flex-col items-center justify-center transition-all duration-300`}>
+                    
+                    {/* State 1: Requires Payment */}
+                    {paymentStatus === 'requires_payment' && flyaiFile && (
+                      <div className="animate-in zoom-in-95 fade-in duration-300 max-w-md w-full">
+                        <div className="bg-white border border-indigo-100 rounded-2xl p-6 shadow-xl shadow-indigo-100/50">
+                          <div className="flex items-center justify-center w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full mb-4 mx-auto">
+                            <Lock />
+                          </div>
+                          <h3 className="text-xl font-bold text-slate-800 text-center mb-2">Unlock AI Agent Drafting</h3>
+                          <p className="text-sm text-slate-500 text-center mb-6">
+                            Profile <strong>{flyaiFile.name}</strong> ready. Pay the one-time AI drafting fee to auto-generate your petition sections.
+                          </p>
+                          
+                          <div className="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-100">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-slate-600 font-medium text-sm">AI Agent Fee</span>
+                              <span className="text-slate-900 font-bold">$49.00</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm border-b border-slate-200 pb-3 mb-3">
+                              <span className="text-slate-500">Taxes</span>
+                              <span className="text-slate-500">$0.00</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-slate-800 font-bold">Total</span>
+                              <span className="text-xl text-indigo-600 font-black">$49.00</span>
+                            </div>
+                          </div>
+
+                          <button 
+                            onClick={handleStripePayment} 
+                            className="w-full bg-slate-900 text-white hover:bg-slate-800 py-3.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-900/20 hover:-translate-y-0.5"
+                          >
+                            <CreditCard /> Pay $49.00 with Stripe
+                          </button>
+                          
+                          <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400 mt-4 font-medium">
+                            <Shield /> Secure payment powered by Stripe
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* State 2: Processing Payment */}
+                    {paymentStatus === 'processing_payment' && (
+                      <div className="flex flex-col items-center justify-center animate-pulse text-center py-8">
+                        <div className="w-10 h-10 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin mb-4"></div>
+                        <h3 className="font-semibold text-slate-800 text-lg">Processing Payment...</h3>
+                        <p className="text-sm text-slate-500 mt-1">Please do not close this window.</p>
+                      </div>
+                    )}
+
+                    {/* State 3: Processing AI */}
+                    {isProcessingFlyai && (
+                      <div className="flex flex-col items-center justify-center animate-pulse text-center py-8">
+                        <Sparkles className="w-10 h-10 text-indigo-500 mb-3" />
+                        <h3 className="font-semibold text-indigo-800 text-lg">AI Agent is analyzing your profile...</h3>
+                        <p className="text-sm text-indigo-600 mt-1">Drafting exhibits, introduction, and legal arguments.</p>
+                      </div>
+                    )}
+
+                    {/* State 4: Success / Completed */}
+                    {paymentStatus === 'success' && !isProcessingFlyai && flyaiFile && (
+                      <div className="text-center animate-in fade-in zoom-in-95 py-4">
+                        <CheckCircle className="w-12 h-12 text-green-500 mb-3 mx-auto" />
+                        <h3 className="font-semibold text-slate-800 text-lg">AI Profile Processed Successfully</h3>
+                        <p className="text-sm text-slate-500 mb-5 max-w-md mx-auto">
+                          Your profile ({flyaiFile.name}) has been parsed. You can now attach your actual evidence files below.
+                        </p>
+                        <input type="file" accept=".flyai" className="hidden" id="flyai-reupload" onChange={(e) => { setPaymentStatus('idle'); handleFlyaiUpload(e); }} />
+                        <label htmlFor="flyai-reupload" className="cursor-pointer px-5 py-2 bg-white text-slate-600 border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors">
+                          Upload Different Profile
+                        </label>
+                      </div>
+                    )}
+
+                    {/* State 0: Initial Idle Upload */}
+                    {paymentStatus === 'idle' && !flyaiFile && (
+                      <div className="text-center py-6">
+                        <UploadCloud className="w-12 h-12 text-indigo-500 mb-4 mx-auto" />
+                        <h3 className="font-semibold text-slate-800 text-lg">Auto-Draft with AI Agent</h3>
+                        <p className="text-sm text-slate-500 mb-6 max-w-md mx-auto">
+                          Upload your .flyai file to let our AI Agent instantly extract and organize your exhibits, introduction, and legal arguments.
+                        </p>
+                        
+                        <div className="flex flex-col items-center gap-4">
+                          <input type="file" accept=".flyai" className="hidden" id="flyai-upload" onChange={handleFlyaiUpload} />
+                          <label htmlFor="flyai-upload" className="cursor-pointer px-6 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-md shadow-indigo-600/20 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all inline-block">
+                            Select .flyai Profile
+                          </label>
+                          
+                          {/* Portfolio Link Added Here */}
+                          <a 
+                            href="https://i140.immigenius.us/pages/intake/portfolio.html" 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors hover:underline"
+                          >
+                            Don't have a .flyai profile? Create one here &rarr;
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Exhibits List & Individual Attachments */}
+                  {exhibits.length > 0 && (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-bold text-slate-700">Your Evidentiary Exhibits</h3>
+                        {isAgentPopulated && (
+                          <span className="text-xs font-medium bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full flex items-center gap-1">
+                            <Sparkles /> Drafted by AI Agent
+                          </span>
+                        )}
+                      </div>
+
+                      {exhibits.map((exhibit, index) => (
+                        <div key={index} className="flex flex-col md:flex-row items-start gap-3 group p-4 border border-slate-100 bg-white rounded-xl shadow-sm hover:border-blue-200 transition-colors">
+                          <div className="w-24 flex-shrink-0 pt-2 font-medium text-slate-500 text-sm">
+                            Exhibit {index + 1}
+                          </div>
+                          
+                          <div className="flex-1 w-full flex flex-col gap-3">
+                            <textarea 
+                              value={exhibit.title}
+                              onChange={(e) => updateExhibit(index, e.target.value)}
+                              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow min-h-[60px] resize-y text-slate-700 font-serif"
+                              placeholder="Describe the exhibit (e.g., Copies of advanced degrees and transcripts)"
+                            />
+                            
+                            {/* Individual File Attachment Button */}
+                            <div className="flex items-center gap-2">
+                              <input 
+                                type="file" 
+                                className="hidden" 
+                                id={`exhibit-attach-${index}`} 
+                                onChange={(e) => handleExhibitAttachment(index, e)} 
+                              />
+                              <label 
+                                htmlFor={`exhibit-attach-${index}`} 
+                                className={`cursor-pointer text-xs font-semibold px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${exhibit.attachedFile ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-transparent'}`}
+                              >
+                                <Paperclip /> 
+                                {exhibit.attachedFile ? exhibit.attachedFile.name : 'Attach PDF/Image File'}
+                              </label>
+                            </div>
+                          </div>
+                          
+                          <button onClick={() => removeExhibit(index)} className="p-2 mt-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors md:opacity-0 group-hover:opacity-100 focus:opacity-100">
+                            <Trash2 />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {exhibits.length > 0 && (
+                     <button onClick={addExhibit} className="mt-6 flex items-center gap-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-colors">
+                       + Add Custom Exhibit Row
+                     </button>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex justify-end">
+                <button onClick={() => setActiveStep(2)} className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl hover:bg-slate-800 transition-colors font-medium">
+                  Next: Review Introduction <ChevronRight />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 2: INTRODUCTION */}
+          {activeStep === 2 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-start">
+                  <div>
+                    <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-3">
+                      Petition Introduction
+                      {isAgentPopulated && (
+                        <span className="text-xs font-medium bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full flex items-center gap-1 mt-1">
+                          <Sparkles /> Auto-populated by AI
+                        </span>
+                      )}
+                    </h2>
+                    <p className="text-slate-500 mt-1 text-sm">Set the stage for the reviewing officer. State clearly what you are applying for.</p>
+                  </div>
+                  <button 
+                    onClick={() => handleSimulateAI('Introduction')}
+                    disabled={isGenerating || !intro}
+                    className="flex items-center gap-2 bg-indigo-50 text-indigo-700 border border-indigo-100 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isGenerating ? <span className="animate-pulse">Polishing...</span> : <><Sparkles /> Agent Polish</>}
+                  </button>
+                </div>
+                
+                <div className="p-6">
+                  {!intro && !isAgentPopulated && (
+                    <div className="bg-amber-50 text-amber-800 p-4 rounded-xl text-sm mb-6 flex gap-3 border border-amber-200">
+                      <Info className="flex-shrink-0 text-amber-600" />
+                      <p>This section is currently empty. Go back to <strong>Step 1</strong> to upload your `.flyai` profile and let the AI Agent draft this for you, or start typing below.</p>
+                    </div>
+                  )}
+                  
+                  <textarea 
+                    value={intro}
+                    onChange={(e) => setIntro(e.target.value)}
+                    className="w-full bg-white border border-slate-300 rounded-xl p-6 text-base leading-relaxed focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow min-h-[300px] font-serif shadow-inner"
+                    placeholder="Write your introduction here..."
+                  />
+                </div>
+              </div>
+              
+              <div className="flex justify-between">
+                <button onClick={() => setActiveStep(1)} className="px-6 py-3 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors font-medium">
+                  Back
+                </button>
+                <button onClick={() => setActiveStep(3)} className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl hover:bg-slate-800 transition-colors font-medium">
+                  Next: Legal Arguments <ChevronRight />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 3: LEGAL ARGUMENTS (DHANASAR) */}
+          {activeStep === 3 && (
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+                    The Legal Arguments
+                  </h2>
+                  <p className="text-slate-500 mt-2">Address the specific requirements established by Matter of Dhanasar.</p>
+                </div>
+                {isAgentPopulated && (
+                  <div className="text-sm font-medium bg-indigo-100 text-indigo-700 px-4 py-2 rounded-xl flex items-center gap-2">
+                    <Sparkles /> Prongs auto-drafted by AI Agent
+                  </div>
+                )}
+              </div>
+
+              {/* Prong 1 */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                  <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <span className="bg-slate-200 text-slate-700 w-6 h-6 rounded flex items-center justify-center text-xs">1</span> 
+                    Advanced Degree Professional
+                  </h3>
+                  <button onClick={() => handleSimulateAI('Prong 1')} className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center gap-1">
+                    <Sparkles /> Improve
+                  </button>
+                </div>
+                <div className="p-5">
+                  <textarea 
+                    value={prong1}
+                    onChange={(e) => setProng1(e.target.value)}
+                    className="w-full bg-white border border-slate-200 rounded-xl p-5 text-base leading-relaxed focus:ring-2 focus:ring-blue-500 font-serif min-h-[150px]"
+                    placeholder="Provide evidence of advanced degree..."
+                  />
+                </div>
+              </div>
+
+              {/* Prong 2 */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                  <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <span className="bg-slate-200 text-slate-700 w-6 h-6 rounded flex items-center justify-center text-xs">2</span> 
+                    Substantial Merit & National Importance
+                  </h3>
+                  <button onClick={() => handleSimulateAI('Prong 2')} className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center gap-1">
+                    <Sparkles /> Improve
+                  </button>
+                </div>
+                <div className="p-5">
+                  <textarea 
+                    value={prong2}
+                    onChange={(e) => setProng2(e.target.value)}
+                    className="w-full bg-white border border-slate-200 rounded-xl p-5 text-base leading-relaxed focus:ring-2 focus:ring-blue-500 font-serif min-h-[250px]"
+                    placeholder="Argue the substantial merit and national importance..."
+                  />
+                </div>
+              </div>
+
+              {/* Prong 3 */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                  <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <span className="bg-slate-200 text-slate-700 w-6 h-6 rounded flex items-center justify-center text-xs">3</span> 
+                    Well Positioned to Advance the Endeavor
+                  </h3>
+                  <button onClick={() => handleSimulateAI('Prong 3')} className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center gap-1">
+                    <Sparkles /> Improve
+                  </button>
+                </div>
+                <div className="p-5">
+                  <textarea 
+                    value={prong3}
+                    onChange={(e) => setProng3(e.target.value)}
+                    className="w-full bg-white border border-slate-200 rounded-xl p-5 text-base leading-relaxed focus:ring-2 focus:ring-blue-500 font-serif min-h-[250px]"
+                    placeholder="Detail positioning to advance the endeavor..."
+                  />
+                </div>
+              </div>
+
+              {/* Prong 4 */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                  <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <span className="bg-slate-200 text-slate-700 w-6 h-6 rounded flex items-center justify-center text-xs">4</span> 
+                    Balancing Test (Waiving Job Offer)
+                  </h3>
+                  <button onClick={() => handleSimulateAI('Prong 4')} className="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center gap-1">
+                    <Sparkles /> Improve
+                  </button>
+                </div>
+                <div className="p-5">
+                  <textarea 
+                    value={prong4}
+                    onChange={(e) => setProng4(e.target.value)}
+                    className="w-full bg-white border border-slate-200 rounded-xl p-5 text-base leading-relaxed focus:ring-2 focus:ring-blue-500 font-serif min-h-[200px]"
+                    placeholder="Argue why waiving the job offer benefits the US..."
+                  />
+                </div>
+              </div>
+              
+              <div className="flex justify-between pb-8">
+                <button onClick={() => setActiveStep(2)} className="px-6 py-3 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors font-medium">
+                  Back
+                </button>
+                <button onClick={() => setActiveStep(4)} className="flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl hover:bg-slate-800 transition-colors font-medium">
+                  Next: Final Review <ChevronRight />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* STEP 4: FINAL REVIEW */}
+          {activeStep === 4 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 max-w-4xl mx-auto">
+                
+                <div className="border-b-4 border-slate-800 pb-6 mb-8 text-center">
+                  <h2 className="text-2xl font-serif font-bold text-slate-900 uppercase tracking-wide">National Interest Waiver Petition</h2>
+                  <p className="text-slate-600 font-serif mt-2">Self-Petitioned by Ziad Nasef</p>
+                </div>
+
+                <div className="prose prose-slate max-w-none font-serif text-slate-800 whitespace-pre-wrap leading-loose">
+                  
+                  <h3 className="font-bold text-lg mb-4 underline">SECTION 1: INTRODUCTION</h3>
+                  <div className="mb-8">{intro || <span className="text-slate-400 italic">[Introduction not provided]</span>}</div>
+
+                  <h3 className="font-bold text-lg mb-4 underline">SECTION 2: LEGAL ARGUMENT</h3>
+                  
+                  <h4 className="font-bold mt-6 mb-2">I. Member of the Professions Holding an Advanced Degree</h4>
+                  <div className="mb-6">{prong1 || <span className="text-slate-400 italic">[Argument not provided]</span>}</div>
+
+                  <h4 className="font-bold mt-6 mb-2">II. Substantial Merit and National Importance</h4>
+                  <div className="mb-6">{prong2 || <span className="text-slate-400 italic">[Argument not provided]</span>}</div>
+
+                  <h4 className="font-bold mt-6 mb-2">III. Well Positioned to Advance the Endeavor</h4>
+                  <div className="mb-6">{prong3 || <span className="text-slate-400 italic">[Argument not provided]</span>}</div>
+
+                  <h4 className="font-bold mt-6 mb-2">IV. On Balance, Beneficial to Waive Job Offer</h4>
+                  <div className="mb-8">{prong4 || <span className="text-slate-400 italic">[Argument not provided]</span>}</div>
+
+                  <h3 className="font-bold text-lg mb-4 mt-12 underline" style={{ pageBreakBefore: 'always' }}>INDEX OF EXHIBITS</h3>
+                  {exhibits.length === 0 ? (
+                    <span className="text-slate-400 italic">[No exhibits listed]</span>
+                  ) : (
+                    <ul className="list-none space-y-3 pl-0">
+                      {exhibits.map((exhibit, idx) => (
+                        <li key={idx} className="flex gap-4">
+                          <span className="font-bold whitespace-nowrap">Exhibit {idx + 1}:</span>
+                          <div className="flex flex-col">
+                            <span>{exhibit.title}</span>
+                            {exhibit.attachedFile && (
+                              <span className="text-sm text-blue-600 mt-1 flex items-center gap-1"><Paperclip /> {exhibit.attachedFile.name} (Attached)</span>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                </div>
+              </div>
+
+              <div className="flex justify-center gap-4 py-8">
+                <button onClick={() => setActiveStep(3)} className="px-6 py-3 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors font-medium border border-slate-200 bg-white">
+                  Edit Arguments
+                </button>
+                <button onClick={() => showToast('Exporting to DOCX format with attachments...')} className="flex items-center gap-2 bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 transition-colors font-bold shadow-lg shadow-blue-600/20">
+                  <Download /> Download Final Document
+                </button>
+              </div>
+            </div>
+          )}
+
+        </main>
+      </div>
+
+      {/* Global Toast Notification */}
+      {toastMsg && (
+        <div className="fixed bottom-6 right-6 bg-slate-900 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom-4 z-50">
+          <CheckCircle className="text-green-400" />
+          <p className="font-medium text-sm">{toastMsg}</p>
+        </div>
+      )}
+    </div>
+  );
+}

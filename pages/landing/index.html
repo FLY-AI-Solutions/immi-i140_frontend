@@ -406,6 +406,62 @@
         color: rgba(255, 255, 255, 0.72);
       }
 
+      .pathway-chooser {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+      }
+
+      .pathway-card {
+        text-align: left;
+        border: 1px solid rgba(185, 176, 162, 0.4);
+        border-radius: 18px;
+        padding: 1.15rem;
+        background: rgba(255, 255, 255, 0.88);
+        color: var(--dark-charcoal);
+        box-shadow: 0 16px 34px rgba(28, 28, 28, 0.06);
+      }
+
+      .pathway-card-title {
+        display: block;
+        margin-bottom: 0.35rem;
+        font-size: 1.05rem;
+        font-weight: 800;
+      }
+
+      .pathway-card-copy {
+        display: block;
+        color: var(--text-secondary);
+        font-size: 0.92rem;
+        line-height: 1.55;
+        margin-bottom: 0.95rem;
+      }
+
+      .pathway-button-row {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+
+      .pathway-button {
+        border-radius: 999px;
+        font-weight: 700;
+        padding: 0.72rem 1.25rem;
+      }
+
+      .pathway-button-entrepreneur {
+        background: var(--dark-charcoal);
+        border-color: var(--dark-charcoal);
+        color: #ffffff;
+      }
+
+      .pathway-button-entrepreneur:hover {
+        background: #333333;
+        border-color: #333333;
+        color: #ffffff;
+      }
+
       @media (max-width: 768px) {
         .hero-section {
           padding: 4rem 1rem;
@@ -418,6 +474,10 @@
 
         .preview-pathway-status {
           white-space: normal;
+        }
+
+        .pathway-chooser {
+          grid-template-columns: 1fr;
         }
       }
 
@@ -471,7 +531,10 @@
         <a class="navbar-brand" href="#">
           <img src="../../assets/images/immigenius-logo.png" alt="ImmI-GeniUS Logo" />
         </a>
-        <a href="../intake/portfolio.html" class="btn btn-header"> Get Started </a>
+        <div class="pathway-button-row">
+          <a href="../intake/portfolio.html" class="btn btn-outline-dark pathway-button">Researchers</a>
+          <a href="../intake/business-portfolio.html" class="btn pathway-button pathway-button-entrepreneur">Entrepreneurs</a>
+        </div>
       </div>
     </header>
 
@@ -487,9 +550,26 @@
             for a National Interest Waiver petition with our proprietary
             AI-driven analysis.
           </p>
-          <a href="../intake/portfolio.html" class="btn btn-hero">
-            Start My Evaluation Now
-          </a>
+          <div class="pathway-chooser">
+            <div class="pathway-card">
+              <span class="pathway-card-title">Researchers</span>
+              <span class="pathway-card-copy">
+                Go to the research intake and continue with `portfolio.html`.
+              </span>
+              <a href="../intake/portfolio.html" class="btn btn-hero pathway-button">
+                Researcher Intake
+              </a>
+            </div>
+            <div class="pathway-card">
+              <span class="pathway-card-title">Entrepreneurs</span>
+              <span class="pathway-card-copy">
+                Go to the entrepreneur intake and continue with `business-portfolio.html`.
+              </span>
+              <a href="../intake/business-portfolio.html" class="btn btn-hero pathway-button">
+                Entrepreneur Intake
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -609,9 +689,14 @@
                   </div>
                 </div>
               </div>
-              <a href="../intake/portfolio.html" class="btn btn-hero">
-                Create My Report
-              </a>
+              <div class="pathway-button-row">
+                <a href="../intake/portfolio.html" class="btn btn-hero pathway-button">
+                  Researchers
+                </a>
+                <a href="../intake/business-portfolio.html" class="btn btn-hero pathway-button">
+                  Entrepreneurs
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -729,9 +814,14 @@
                     evaluation before deciding your next petition move.
                   </p>
                 </div>
-                <a href="../intake/portfolio.html" class="btn btn-light fw-bold">
-                  Start Evaluation
-                </a>
+                <div class="pathway-button-row">
+                  <a href="../intake/portfolio.html" class="btn btn-light fw-bold pathway-button">
+                    Researchers
+                  </a>
+                  <a href="../intake/business-portfolio.html" class="btn btn-outline-light fw-bold pathway-button">
+                    Entrepreneurs
+                  </a>
+                </div>
               </div>
             </div>
           </div>
